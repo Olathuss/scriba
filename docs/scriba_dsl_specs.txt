@@ -1,0 +1,700 @@
+Scibra DSL Specification - v0.1
+
+--------------------
+Table of Contents
+--------------------
+1. Overview
+2. Lexical Structure
+3. Syntax Basics
+4. Control Flow
+5. Events
+6. Commands
+7. Object Model
+8. Script Structure
+
+--------------------
+1. Overview
+--------------------
+
+Scriba is a minimal, game-centric scripting language designed for RPG dialogue, quests, events,
+combat logic, and world interactions. It is intended for designers, writers, and modders who want
+to express game logic in a clear, readable, narrative-friendly way without traditional programming
+syntax.
+
+Scriba emphasizes:
+	- Readability - scripts resemble natural language.
+	- Minimal punctuation - no braces, no parentheses for method calls.
+	- Indentation-defined structure - blocks are created by increasing indentation.
+	- Object-centric expressions - properties and methods accessed through dot notation.
+	- Engine-defined commands and objects - the engine exposes actions and data to scripts.
+	- Designer accessibility - the language avoids complexity and ambiguity.
+	
+Scriba is not a general-purpose programming language. It is a domain-specific language focused on
+defining gameplay behavior in a concise, intuitive form.
+
+--------------------
+2. Lexical Structure
+--------------------
+
+2.1 Whitespace
+
+Whitespace at the beginning of a line determines indentation level.
+Whitespace inside a line has no special meaning except within strings.
+
+Tabs or spaces are both acceptable for indentation, but indentation must be consistent within a block.
+Mixed indentation is allowed only if the resulting indentation levels align.
+
+2.2 Indentation Rules
+
+Indentation defines block structure.
+
+ - A line ending with : begins a new block.
+ - The following line must be indented more than the previous line.
+ - A decrease in indentation ends the current block.
+ - Multiple nested blocks are allowed.
+
+Indentation must increase or decrease in whole units. Partial indentation changes are invalid.
+
+2.3 Line Structure
+
+Each line contains one statement
+Blank lines are allowed and ignored.
+A line may contain a comment after a # symbol.
+
+2.4 Identifiers
+
+Identifiers consist of:
+ - Letters
+ - Digits
+ - Underscores
+ 
+Identifiers may not begin with a digit.
+
+Examples:
+	give_quest
+	has_item
+	stats
+	health
+	enemy_faction
+
+2.5 Keywords
+
+The following words are reserved:
+	on
+	if
+	else
+	true
+	false
+
+Additional keywords may be added in future versions
+
+2.6 Literals
+
+	2.6.1 Strings
+	
+		Strings are enclosed in double quotes:
+			"Hello traveler."
+			"lost_relic"
+
+		Strings may contain spaces and punctuation.
+		
+	2.6.2 Numbers
+	
+		Numbers may be integers or floating-point values:
+			25
+			3.14
+			-10
+			
+	2.6.3 Booleans
+	
+		Boolean literals are:
+			true
+			false
+
+2.7 Comments
+
+A comment begins with # and continues until the end of the line
+
+	# This is a comment
+	say "Hello" # inline comment
+
+Comments are ignored by the interpreter.
+
+
+--------------------
+3. Syntax Basics
+--------------------
+
+3.1 Statements
+
+A statement is a single line of executable script.
+Each line contains exactly one statement.
+Statements may be:
+	- Commands.
+	- Object method calls.
+	- Assignments.
+	- Control flow statements (if, else if, else).
+	- Event declarations (top-level only).
+	
+Statements do not require semicolons or terminators.
+A statement ends at the end of the line.
+
+3.2 Commands
+
+Commands are engine-defined actions.
+They consist of a command name followed by zero or more arguments.
+
+Examples:
+	give_quest "lost_relic"
+	damage target 25 fire
+	give_item player "sword"
+	give_gold player 25
+	set_quest_flag "lost_relic" "has_relic" true
+	
+Arguments may be:
+	- Strings.
+	- Numbers.
+	- Booleans.
+	- Object paths.
+	- Method calls.
+	
+Commands do not return values.
+
+3.3 Object Method Calls
+
+Methods are invoked on objects using dot notation.
+Parentheses are not used.
+
+Examples:
+	player.has_item "amulet"
+	npc.is_enemy player
+	enemy.apply_status "burning"
+	
+Method calls may appear:
+	- As standalone statements.
+	- As part of expressions.
+	- Inside conditions.
+
+3.4 Assignments
+
+Assignments set the value of an object property.
+
+Syntax:
+	object.property = expression
+	
+Examples:
+	player.stats.health = 50
+	npc.faction.reputation = npc.faction.reputation + 10
+	
+Only engine-defined properties may have assignments.
+Assignments cannot create new properties.
+
+3.5 Expressions
+
+Expressions evaluate to a value.
+Expressions may include:
+	- Literals (strings, numbers, booleans).
+	- Object paths.
+	- Method calls.
+	- Arithmetic operations.
+	- Comparison operations.
+
+Examples:
+	player.stats.health
+	player.stats.health + 10
+	npc.faction.friendly == true
+	player.has_item "amulet"
+
+Expressions may appear in:
+	- Assignments.
+	- Conditions.
+	- Method arguments.
+	- Command arguments.
+
+3.6 Object Paths
+
+Object paths access properties on engine-defined objects.
+
+Examples:
+	player.stats.health
+	npc.inventory.items
+	enemy.position.x
+	
+Object paths may be nested to any depth.
+All paths must refer to valid engine-defined objects and properties.
+
+3.7 Arithmetic Operators
+
+The following arithmetic operators are supported:
+	- addition:       +
+	- subtraction:    -
+	- multiplication: *
+	- division:       /
+	
+Arithmetic is evaluated strictly left-to-right.
+Note: Operator precedence is not implemented.
+Parentheses are not yet supported.
+
+3.8 Comparison Operators
+
+The following comparison operators are supported:
+	- equal:                  ==
+	- not equal:              !=
+	- less than:               <
+	- greater than:            >
+	- less than or equal:     <=
+	- greater than or equal:  >=
+	
+Comparisons evaluate to true or false.
+
+3.9 Boolean Evaluation
+
+Only the literal value true is considered true.
+All other values are considered false.
+
+Examples:
+	if true: # executes
+	if false: # does not execute
+	if 0: # does not execute
+	if "text": # does not execute
+	if player.has_item "amulet": # depends on return value
+	
+3.10 Block Structure
+
+A block begins with a line ending in ":".
+The following line must be indented more than the previous line.
+
+Example:
+	if player.has_item "amulet":
+		give_quest "lost_relic"
+		say "Good luck."
+		
+Blocks may contain any valid statements.
+Blocks may be nested.
+	
+
+--------------------
+4. Control Flow
+--------------------
+
+4.1 If Statements
+
+An if statement evaluates a condition and executes its block if the condition is true.
+
+Syntax:
+	if condition:
+		statements
+	
+Example:
+	if player.stats.health < 20:
+		say "Looks like you could use some healing."
+		
+The condition must be an expression that evaluates to a boolean value.
+Only the literal value true is considered true.
+
+4.2 Else If
+
+An else if statement provides an additional condition for the block to test when previous
+conditions are false.
+
+Syntax:
+	else if condition:
+		statements
+		
+Example:
+	if player.has_item "amulet":
+		say "You have the sacred amulet."
+	else if player.has_item "ring":
+		say "You do not have the amulet, but you do have the ring."
+		
+Else if blocks must follow an if statement or another else if statement.
+
+4.3 Else Statement
+
+An else statement provides a fallback block that executes if all previous conditions were false.
+
+Syntax:
+	else:
+		statements
+
+Example:
+	if player.has_item "amulet":
+		say "You have the sacred amulet."
+	else:
+		say "Keep seeking the relics."
+		
+An else block must be the final block in an if-chain.
+
+4.4 Nested Conditions
+
+Conditional statements may be nested to any depth.
+
+Example:
+	if npc.is_enemy player:
+		if player.stats.health < 30:
+			npc.attack player
+		else:
+			npc.taunt player
+			
+Each nested block must follow indentation rules.
+
+4.5 Condition Evaluation
+
+Conditions are evaluated top-to-bottom within an if-chain. The first condition to evaluate true
+will execute its block. Remaining conditions in the chain are skipped.
+
+Example:
+	if player.stats.health <= 0:
+		say "Your journey has ended."
+	else if player.stats.health < 20:
+		say "You are badly wounded."
+	else:
+		say "You feel fine."
+		
+4.6 Valid Conditions
+
+A condition may be:
+	- A comparison expression.
+	- A method returning a boolean.
+	- A boolean literal.
+	- Any expression which evaluates to a boolean.
+	
+Examples:
+	if player.has_item "key":
+	if npc.faction.reputation >= 50:
+	if true:
+	
+4.7 Invalid Conditions
+
+The following are not valid conditions:
+	- Assignments.
+	- Commands.
+	- Expressions that do not evaluate to a boolean.
+	
+Examples of invalid conditions:
+	if give_item player "sword": # invalid
+	if player.stats.health = 10: # invalid
+	
+4.8 Block Requirements
+
+Every control flow statement must end with a colon ":". The following line must be
+indented more than the control flow line. A decrease in indentation ends the block.
+
+Example:
+	if player.has_item "amulet":
+		give_quest "lost_relic"
+		say "Good luck."
+	say "Until we meet again." # dedented block is outside of the condition
+
+--------------------
+5. Events
+--------------------
+
+5.1 Event Declaration Syntax
+
+An event is a top-level block used to define behavior when the engine triggers a
+specific event name.
+
+Syntax:
+	on event_name:
+		statements
+		
+All blocks must belong to an event. Events cannot be nested inside other blocks.
+
+5.2 Event Names (engine-defined)
+
+Event names are defined by the engine.
+Each event name corresponds to a specific gameplay trigger.
+
+Examples of engine-defined events:
+	on talk
+	on enter_area
+	on interact
+	on combat_start
+	on combat_end
+
+Only valid engine-defined event names may be used.
+Using an unknown event name is an error.
+
+5.3 Event Parameters (optional)
+
+Some events may provide parameters, depending on engine design.
+If an event provides parameters, they appear after the event name.
+
+Syntax:
+	on event_name paramter1 parameter2:
+		statements
+
+Example:
+	on attack attacker target:
+		if target.stats.health <= 0:
+			say "A fatal blow was struck."
+
+Event parameters are read-only within the event block.
+
+5.4 Event Execution
+
+When an event is triggered by the engine:
+	- The corresponding event block is located.
+	- The statements inside the block are executed from top to bottom.
+	- Nested blocks follow normal indentation rules.
+	- If no event block with the given name exists, nothing happens.
+
+Example:
+	on talk:
+		if player.has_item "amulet":
+			say "You carry the sacred amulet."
+		else:
+			say "Please, keep looking for the amulet."
+			
+5.5 Multiple Event Blocks
+
+A script may contain multiple event blocks, each corresponding to different events.
+Scripts may not have duplicate event names, or attempt to implement any event more
+than once.
+
+Example:
+	on talk:
+		say "Hello."
+		
+	on enter_area:
+		play_sound "wind"
+		
+Event blocks do not share local variables or state.
+All persistent data must be stored in engine-defined objects and properties.
+
+5.6 Invalid Event Usage
+
+The following are invalid:
+	- Nesting an event inside another block.
+	- Declaring an event without a colon.
+	- Using an undefined event name.
+	- Assigning to event parameters.
+	
+Example of invalid event declarations:
+	if true:
+		on talk: #invalid
+			say "Hello."
+			
+	on talk # invalid, missing colon
+	
+	on unknown_event: # invalid, event not defined by engine
+		say "???"
+		
+--------------------
+6. Commands
+--------------------
+
+6.1 Command Definition
+
+A command is an engine-defined action that performs an operation within the game world.
+Commands are statements. They do not return values and cannot be used inside expressions.
+
+Syntax:
+	command_name argument1 argument2 ...
+	
+Examples:
+	give_item player "sword"
+	damage target 25 fire
+	play_sound "door_open"
+	set_quest_flag "lost_relic" "has_relic" true
+	
+Commands must be defined by the engine. Using an undefined command name results in an error.
+
+6.2 Command Arguments
+
+Commands may accept zero or more arguments.
+
+Arguments may be:
+	- Strings
+	- Numbers
+	- Booleans
+	- Object paths
+	- Method calls
+	- Expressions which evaluate to a literal value
+	
+Examples:
+	give_gold player 50
+	damage enemy (player.stats.strength + 5) # parentheses not supported, invalid
+	damage enemy player.stats.strength + 5 # valid, evaluated left to right
+	play_sound "battle_start"
+	
+Arguments are evaluated before the command executes.
+
+6.3 Commands as Statements
+
+Commands must be written as standalone statements.
+They cannot be used:
+	- As part of an expression.
+	- As a condition.
+	- As part of an assignment.
+	- As a method argument (unless the engine explicitly allows it)
+	
+Invalid examples:
+	if give_item player "sword":
+	x = damage enemy 10 fire
+	say damage enemy 10 fire
+
+6.4 Game State Modification
+
+Commands may modify game states, including:
+	- Player or NPC properties
+	- Inventory contents
+	- Quest flags
+	- World state
+	- Audio/visual effects
+	
+Because commands do not return values, their only purpose is modifying the game state.
+
+6.5 Command Errors
+
+The following will produce errors:
+	- Calling an undefined command
+	- Passing the wrong number of arguments
+	- Passing arguments of unsupported types
+	- Using a command where an expression is required
+	
+Examples of invalid usage:
+	give_item "sword"			# missing target
+	damage enemy "ten" fire		# invalid argument type
+	play_sound					# missing required argument
+
+--------------------
+7. Object Model
+--------------------
+
+7.1 Engine Objects
+
+The engine exposes objects to scripts. Objects represent entities or systems within the game world,
+such as: the player, npcs, enemies, items, global flag system, etc.
+
+Objects are defined entirely by the engine. Scripts cannot create new objects or modify the object
+hierarchy.
+
+Examples of engine-defined objects:
+	player
+	npc
+	enemy
+	world
+	global_flags
+	
+Using an undefined object name results in an error.
+
+7.2 Object Paths
+
+Object paths access properties or methods on engine-defined objects.
+
+Syntax:
+	player.stats.health
+	npc.inventory.items
+	enemy.position.x
+	global_flags.quests
+	
+Object paths may be nested to any depth. All paths must refer to valid engine-defined properties
+or methods.
+
+7.3 Properties
+
+Properties are values stored on engine-defined objects.
+
+Properties may be:
+	- Numbers
+	- Strings
+	- Booleans
+	- Lists
+	- Dictionaries
+	- Other engine-defined objects
+	
+Examples:
+	player.name
+	npc.faction.reputation
+	enemy.stats.attack_power
+	quest_system.current_quest
+
+7.4 Methods
+
+Methods are functions defined on engine objects. Methods are invoked using dot notation
+without parentheses.
+
+Syntax:
+	object.method argument1 argument2 ...
+	
+Examples:
+	player.has_item "amulet"
+	npc.is_enemy player
+	enemy.apply_status "burning"
+	
+Methods may return values, including booleans for use in conditions.
+
+7.5 Read-Only vs Writable Properties
+
+Some properties are writable and may appear on the left-hand side of an assignment.
+
+Example of a writable property:
+	player.stats.health = 50
+	
+Invalid:
+	player.name = "Anji"		# invalid if name is read-only
+	npc.inventory.items = []	# invalid if items are read-only
+	
+Writable properties are defined by the engine. Scripts cannot create new properties
+or modify property types.
+
+7.6 Invalid Object Access
+
+The following are invalid:
+	- Accessing a property that does not exist.
+	- Calling a method that does not exist.
+	- Attempting to assign to a read-only property.
+	- Attempting to access an undefined object.
+	- Using parentheses in method calls.
+	- Using dynamic property names.
+	
+Examples of invalid usage:
+	player.stats.undefined_stat		# invalid
+	npc.fly_away player				# invalid method
+	npc.position = 5				# invalid assignment
+	unknown_object.health			# invalid object
+	player.has_item("amulet")		# parentheses not supported
+
+--------------------
+8. Script Structure
+--------------------
+
+8.1 File Format
+
+A Scriba script is a plain text file encoded in UTF-8. Files typically use extension .scriba.
+This is not enforced by the interpreter, however, as the engine can use any extension it likes.
+
+Scripts may only contain event blocks and comments. No executable statements may appear outside
+an event block.
+
+8.2 Top-Level Rules
+
+The top level of a script may contain:
+	- Event declarations.
+	- Blank lines.
+	- Comments.
+	
+The following are not allowed in the top level:
+	- Commands.
+	- Assignments.
+	- Expressions.
+	- Method calls.
+	- Nested blocks.
+
+Any executable code must appear inside an event block.
+
+8.3 Event Ordering
+
+Event blocks may appear in any order. Event order does not affect behavior, as events are
+triggered by name.
+
+Duplicate event names within the same script produce an error.
+
+8.4 Script Purpose
+
+Each script defines behavior for a specific object, entity, or system within the game.
+Scripts do not share local variables or states. Persistent data must be stored by
+engine-defined objects and properties.
+

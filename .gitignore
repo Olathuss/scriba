@@ -1,0 +1,44 @@
+# --- Visual Studio user-specific files ---
+.vs/
+*.user
+*.suo
+
+# --- Build artifacts ---
+/bin/
+/obj/
+/build/
+/out/
+/Debug/
+/Release/
+/x64/
+/x86/
+
+# --- CMake ---
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+*.cmake
+
+# --- Compiler / linker outputs ---
+*.obj
+*.o
+*.pdb
+*.idb
+*.ilk
+*.exe
+*.dll
+*.lib
+*.exp
+
+# --- Logs and temporary files ---
+*.log
+*.tlog
+*.tmp
+
+# --- Generated files ---
+*.generated.*
+
+# --- OS junk ---
+Thumbs.db
+.DS_Store
