@@ -15,3 +15,4 @@ add_library(scriba STATIC
 target_include_directories(scriba PUBLIC include)
 
 add_subdirectory(examples)
+add_subdirectory(tests)

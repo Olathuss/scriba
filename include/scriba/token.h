@@ -20,6 +20,8 @@ namespace scriba {
 		std::string
 	>;
 
+	const char* token_type_to_string(TokenType type);
+
 	struct Token {
 		TokenType type;
 		std::string lexeme;
@@ -35,7 +37,7 @@ namespace scriba {
 
 		std::string to_string() const {
 			return "Token(" +
-				std::to_string(static_cast<int>(type)) + ", \"" +
+				std::string(token_type_to_string(type)) + ", \"" +
 				lexeme + "\", line=" +
 				std::to_string(line) + ", col=" +
 				std::to_string(column) + ")";
@@ -81,6 +83,4 @@ namespace scriba {
 			}
 		}
 	};
-
-	const char* token_type_to_string(TokenType type);
 } // namespace scriba

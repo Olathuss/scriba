@@ -27,6 +27,7 @@ namespace scriba {
 		char advance();
 		char peek() const;
 		char peek_next() const;
+		char previous_char() const;
 		bool match(char expected);
 		bool is_at_end() const;
 
@@ -36,6 +37,7 @@ namespace scriba {
 
 		void identifier();
 		void number();
+		void number_starting_with_dot();
 		void string_literal();
 
 		void handle_whitespace();

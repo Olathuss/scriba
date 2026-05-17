@@ -40,6 +40,14 @@ namespace scriba {
             return;
         }
 
+        if (current_char == '.'
+            && !is_digit(previous_char())
+            && previous_char() != '.'
+            && is_digit(peek())) {
+            number_starting_with_dot();
+            return;
+        }
+
         switch (current_char) {
             case '"': string_literal(); break;
             case ':': add_token(TokenType::COLON); break;
@@ -108,6 +116,12 @@ namespace scriba {
         return (current + 1 >= source.size() ? '\0' : source[current + 1]);
     }
 
+    char Scanner::previous_char() const
+    {
+        if (current == 0) return '\0';
+        return source[current - 1];
+    }
+
     bool scriba::Scanner::match(char expected)
     {
         if (is_at_end()) return false;
@@ -155,6 +169,24 @@ namespace scriba {
     {
         while (is_digit(peek())) advance();
 
+        if (peek() == '.' && is_digit(peek_next())) {
+            advance();
+
+            while (is_digit(peek())) advance();
+        }
+
+        std::string_view text = source.substr(start, current - start);
+        add_token(TokenType::NUMBER, text);
+    }
+
+    void Scanner::number_starting_with_dot()
+    {
+        // Context:
+        // - start points at '.'
+        // - current points just after '.'
+        // - peek() is guaranteed to be a digit (checked in scan_token)
+
+        while (is_digit(peek())) advance();
         std::string_view text = source.substr(start, current - start);
         add_token(TokenType::NUMBER, text);
     }
@@ -231,7 +263,7 @@ namespace scriba {
         at_line_start = true;
         line++;
         column = 1;
-        add_token(TokenType::NEWLINE);
+        add_token(TokenType::NEWLINE, "");
     }
 
     bool scriba::Scanner::is_alpha(char in_char)
