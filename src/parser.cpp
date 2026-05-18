@@ -17,7 +17,7 @@ namespace scriba {
 
         while (match(TokenType::NEWLINE)) {}
 
-        while (!match(TokenType::END_OF_FILE)) {
+        while (!is_at_eof()) {
             EventBlock event = parse_event_block();
             auto [it, inserted] = events.emplace(event.event_token.lexeme, std::move(event));
             if (!inserted) {
@@ -329,6 +329,10 @@ namespace scriba {
         return storage->previous();
     }
 
+    bool Parser::is_at_eof() const {
+        return storage->peek().get_type() == TokenType::END_OF_FILE;
+    }
+
     bool Parser::check(const TokenType& type) const
     {
         return !storage->is_at_end() && storage->peek().get_type() == type;
@@ -381,7 +385,7 @@ namespace scriba {
 
     bool Parser::still_in_block(const IndentLevel& block_indent)
     {
-        if (check(TokenType::END_OF_FILE)) return false;
+        if (is_at_eof()) return false;
         if (!check(TokenType::INDENT)) {
             throw ParseError("Indentation expected", peek());
         }

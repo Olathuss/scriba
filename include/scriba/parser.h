@@ -26,7 +26,7 @@
 namespace scriba {
     class Parser {
     private:
-        StorageManager* storage;
+        StorageManager* storage = nullptr;
 
         std::unordered_map<std::string, EventBlock> events;
 
@@ -38,6 +38,8 @@ namespace scriba {
         void set_storage_manager(StorageManager* p_storage) {
             storage = p_storage;
         }
+
+        const std::unordered_map<std::string, EventBlock>& get_events() const { return events; }
 
         void parse_script();
 
@@ -91,6 +93,8 @@ namespace scriba {
         Token peek_next() const;
 
         Token previous() const;
+
+        bool is_at_eof() const;
 
         Token consume(const TokenType& type, const std::string& message);
 
