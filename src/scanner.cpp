@@ -211,6 +211,10 @@ namespace scriba {
 
     void scriba::Scanner::handle_whitespace()
     {
+        if (at_line_start) {
+            handle_indentation();
+        }
+
         while (!is_at_end()) {
             char current_char = peek();
             if (current_char == ' ' || current_char == '\t') {
