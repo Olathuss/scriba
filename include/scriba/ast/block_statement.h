@@ -1,3 +1,5 @@
+#pragma once
+
 #include "scriba/ast/statement.h"
 #include <memory>
 #include <vector>

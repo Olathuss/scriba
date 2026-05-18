@@ -1,3 +1,5 @@
+#pragma once
+
 namespace scriba {
 	struct RangeExpression : Expression {
 		std::unique_ptr<Expression> left;

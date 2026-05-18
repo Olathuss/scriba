@@ -1,3 +1,5 @@
+#pragma once
+
 #include "scriba/ast/expression.h"
 #include "scriba/token.h"
 

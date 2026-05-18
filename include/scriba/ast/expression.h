@@ -1,5 +1,7 @@
 #pragma once
 
+#include "scriba/token.h"
+
 namespace scriba {
 	struct Expression {
 		Token token;
