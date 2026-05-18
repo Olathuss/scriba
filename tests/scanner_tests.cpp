@@ -29,7 +29,9 @@ void test(
 	Scanner scanner = Scanner(source);
 	vector<Token> tokens = scanner.scan_tokens();
 
+	token_list.insert(token_list.begin(), { TokenType::INDENT, "" });
 	token_list.push_back({ TokenType::END_OF_FILE, "\0" });
+
 	if (tokens.size() != token_list.size()) {
 		cout << "Token count mismatch, expected: " << token_list.size() << " actual: " << tokens.size() << endl;
 		assert(false);
@@ -198,12 +200,10 @@ void test_misc() {
 		});
 
 	test("Indent (space)", "    x", {
-	{TokenType::INDENT, ""},
 	{TokenType::IDENTIFIER, "x"}
 		});
 
 	test("Indent (tab)", "\tx", {
-	{TokenType::INDENT, ""},
 	{TokenType::IDENTIFIER, "x"}
 		});
 
@@ -316,7 +316,6 @@ void test_sequences() {
 		});
 
 	test("Sequence: mixed whitespace", "  x\t+\t  5", {
-	{TokenType::INDENT, ""},
 	{TokenType::IDENTIFIER, "x"},
 	{TokenType::PLUS, "+"},
 	{TokenType::NUMBER, "5"}
@@ -432,6 +431,7 @@ void test_edge_cases() {
 }
 
 void run_scanner_tests() {
+	cout << "Running scanner tests..." << endl;
 
 	test_tokens();
 	test_keywords();

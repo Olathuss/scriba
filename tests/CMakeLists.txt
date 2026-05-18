@@ -4,6 +4,8 @@ add_executable(scriba_tests
 	test_main.cpp
 	scanner_tests.cpp
 	parser_tests.cpp
+	ast_printer.h
+	ast_printer.cpp
 )
 
 target_link_libraries(scriba_tests PRIVATE scriba)
