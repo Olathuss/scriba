@@ -8,6 +8,7 @@
 
 #include "scriba/ast/event_block.h"
 #include "scriba/ast/expression.h"
+#include "scriba/ast/range_expression.h"
 #include "scriba/ast/literal_expression.h"
 #include "scriba/ast/unary_expression.h"
 #include "scriba/ast/binary_expression.h"
@@ -57,6 +58,8 @@ namespace scriba {
         std::unique_ptr<Statement> parse_command_statement(std::unique_ptr<Expression> left_expression);
 
         std::unique_ptr<Expression> parse_expression();
+
+        std::unique_ptr<Expression> parse_range();
 
         std::unique_ptr<Expression> parse_equality();
 

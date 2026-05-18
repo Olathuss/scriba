@@ -172,7 +172,19 @@ namespace scriba {
 
     std::unique_ptr<Expression> Parser::parse_expression()
     {
-        return parse_equality();
+        return parse_range();
+    }
+
+    std::unique_ptr<Expression> Parser::parse_range()
+    {
+        auto expression = parse_equality();
+
+        while (match(TokenType::DOT) && match(TokenType::DOT)) {
+            std::unique_ptr<Expression> right = parse_equality();
+            expression = std::make_unique<RangeExpression>(std::move(expression), std::move(right));
+        }
+
+        return expression;
     }
 
     std::unique_ptr<Expression> Parser::parse_equality()
