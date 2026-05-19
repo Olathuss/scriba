@@ -46,7 +46,10 @@ void expect_ast(const std::string& test_name,
             std::cout << "Expected:\n" << expected;
             std::cout << "Actual:\n" << actual;
             failed_tests_parser.push_back(test_name);
+            std::cout << "Parser Test \"" << test_name << "\" failed." << std::endl;
+            return;
         }
+        std::cout << "Parser Test \"" << test_name << "\" passed." << std::endl;
     }
     catch (const exception& e) {
         std::cout << "Unexpected exception in test \"" << test_name << "\": "
@@ -75,7 +78,7 @@ void expect_parse_error(const std::string& test_name,
         failed_tests_parser.push_back(test_name);
     }
     catch (const std::exception&) {
-        std::cout << "Test \"" << test_name << "\" correctly failed.\n";
+        std::cout << "Test \"" << test_name << "\" correctly failed, passed.\n";
     }
 }
 
@@ -89,7 +92,35 @@ void test_atomic_success() {
         ")\n"
     );
 
-    std::cout << "Atomic success tests completed." << std::endl;
+    expect_ast("atomic: identifier with literal arg",
+        "on test:\n    x 5\n",
+        "(Event test:\n"
+        "\t(Command (Ident x) (Literal 5))\n"
+        ")\n"
+    );
+
+    expect_ast("atomic: grouping identifier",
+        "on test:\n    x (y)\n",
+        "(Event test:\n"
+        "\t(Command (Ident x) (Group (Ident y)))\n"
+        ")\n"
+    );
+
+    expect_ast("atomic: member access",
+        "on test:\n    x y.z\n",
+        "(Event test:\n"
+        "\t(Command (Ident x) (Member (Ident y) z))\n"
+        ")\n"
+    );
+
+    expect_ast("atomic: member access",
+        "on test:\n    x.y z\n",
+        "(Event test:\n"
+        "\t(Command (Member (Ident x) y) (Ident z))\n"
+        ")\n"
+    );
+
+    std::cout << "Atomic (success) tests completed." << std::endl;
 }
 
 void test_atomic_failure() {
@@ -99,7 +130,39 @@ void test_atomic_failure() {
         "on test:\n    123\n"
     );
 
-    std::cout << "Atomic failure tests completed." << std::endl;
+    expect_parse_error("atomic: string literal",
+        "on test:\n    \"hello\"\n"
+    );
+
+    expect_parse_error("atomic: boolean literal",
+        "on test:\n    true\n"
+    );
+
+    expect_parse_error("atomic: grouping literal",
+        "on test:\n    (x)\n"
+    );
+
+    expect_parse_error("atomic: array literal",
+        "on test:\n    [1, 2, 3]\n"
+    );
+
+    expect_parse_error("atomic: range literal",
+        "on test:\n    1..5\n"
+    );
+
+    expect_parse_error("atomic: no event",
+        "no event\n"
+    );
+
+    expect_parse_error("atomic: event no body",
+        "on test:\n"
+    );
+
+    expect_parse_error("atomic: mixed indentation",
+        "on test:\n\t    x\n"
+    );
+
+    std::cout << "Atomic (failure) tests completed." << std::endl;
 }
 
 void run_parser_tests() {

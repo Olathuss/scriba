@@ -28,7 +28,7 @@ void test(
 	std::string source,
 	std::vector<std::pair<TokenType, std::string>> token_list) {
 	std::cout << "Running test: " << test_name << std::endl;
-	std::cout << "Source:\n" << source << std::endl;
+	//std::cout << "Source:\n" << source << std::endl;
 
 	try {
 		Scanner scanner = Scanner(source);
@@ -45,12 +45,12 @@ void test(
 		for (int i = 0; i < token_list.size(); ++i) {
 			if (!assert_token(tokens[i], token_list[i].first, token_list[i].second)) {
 				failed_tests_scanner.push_back(test_name);
-				std::cout << "Test \"" << test_name << "\" failed." << std::endl;
+				std::cout << "Scanner Test \"" << test_name << "\" failed." << std::endl;
 				return;
 			}
 		}
 
-		std::cout << "Test \"" << test_name << "\" complete." << std::endl;
+		std::cout << "Scanner Test \"" << test_name << "\" passed." << std::endl;
 	}
 	catch (const ScannerError& e) {
 		std::cout << "ScannerError in test \"" << test_name << "\": "
