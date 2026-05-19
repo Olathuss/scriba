@@ -11,6 +11,8 @@
 
 using namespace scriba;
 
+int parser_tests_total = 0;
+int parser_tests_failed = 0;
 std::vector<std::string> failed_tests_parser;
 
 void expect_ast(const std::string& test_name,
@@ -19,6 +21,8 @@ void expect_ast(const std::string& test_name,
 {
     std::cout << "Running test: " << test_name << std::endl;
     std::cout << "Source:\n" << source << std::endl;
+
+    parser_tests_total++;
 
     try {
         Scanner scanner(source);
@@ -62,6 +66,8 @@ void expect_parse_error(const std::string& test_name,
     const std::string& source)
 {
     cout << "Running test: " << test_name << "\n";
+
+    parser_tests_total++;
 
     try {
         Scanner scanner(source);
@@ -206,6 +212,10 @@ void test_atomic_failure() {
         "on test:\n    1..5\n"
     );
 
+    expect_parse_error("atomic: invalid range literal",
+        "on test:\n    x 1...5\n"
+    );
+
     expect_parse_error("atomic: no event",
         "no event\n"
     );
@@ -218,6 +228,10 @@ void test_atomic_failure() {
         "on test:\n\t    x\n"
     );
 
+    expect_parse_error("atomic: array invalid range argument",
+        "on test:\n    x [1...5]\n"
+    );
+
     std::cout << "Atomic (failure) tests completed." << std::endl;
 }
 
@@ -226,6 +240,8 @@ void run_parser_tests() {
 
     test_atomic_success();
     test_atomic_failure();
+
+    parser_tests_failed = failed_tests_parser.size();
 
     if (failed_tests_parser.size() > 0) {
         std::cout << "The following tests failed: " << std::endl;
@@ -238,4 +254,12 @@ void run_parser_tests() {
     }
 
     std::cout << "Parser test completed." << std::endl;
+}
+
+int get_parser_tests_total() {
+    return parser_tests_total;
+}
+
+int get_parser_tests_failed() {
+    return failed_tests_parser.size();
 }

@@ -11,6 +11,7 @@
 
 using namespace scriba;
 
+int scanner_tests_total = 0;
 std::vector<std::string> failed_tests_scanner;
 
 bool assert_token(const Token& token, const TokenType& type, const std::string_view lexeme) {
@@ -29,6 +30,8 @@ void test(
 	std::vector<std::pair<TokenType, std::string>> token_list) {
 	std::cout << "Running test: " << test_name << std::endl;
 	//std::cout << "Source:\n" << source << std::endl;
+
+	scanner_tests_total++;
 
 	try {
 		Scanner scanner = Scanner(source);
@@ -472,4 +475,12 @@ void run_scanner_tests() {
 	}
 	
 	std::cout << "Scanner tests completed." << std::endl;
+}
+
+int get_scanner_tests_total() {
+	return scanner_tests_total;
+}
+
+int get_scanner_tests_failed() {
+	return failed_tests_scanner.size();
 }
