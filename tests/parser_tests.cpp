@@ -1,67 +1,122 @@
 #include <iostream>
 #include <algorithm>
+#include <cassert>
 
 #include "ast_printer.h"
 #include "scriba/scanner.h"
 #include "scriba/parser.h"
 #include "scriba/storagemanager.h"
+#include "scriba/errors/parse_error.h"
+#include "scriba/errors/scanner_error.h"
 
-using namespace std;
 using namespace scriba;
 
-void expect_ast(const std::string& test_name, const std::string& source, const std::string& expected) {
-    cout << "Running test: " << test_name << endl;
-    cout << "Source:\n" << source << endl;
+std::vector<std::string> failed_tests_parser;
 
-    Scanner scanner(source);
-    auto tokens = scanner.scan_tokens();
+void expect_ast(const std::string& test_name,
+    const std::string& source,
+    const std::string& expected)
+{
+    std::cout << "Running test: " << test_name << std::endl;
+    std::cout << "Source:\n" << source << std::endl;
 
-    std::unique_ptr<StorageManager> storage = std::make_unique<StorageManager>();
+    try {
+        Scanner scanner(source);
+        auto tokens = scanner.scan_tokens();
 
-    for (auto token : tokens) {
-        storage->add_token(token);
+        unique_ptr<StorageManager> storage = std::make_unique<StorageManager>();
+        for (auto token : tokens) storage->add_token(token);
+
+        Parser parser;
+        parser.set_storage_manager(storage.get());
+        parser.parse_script();
+
+        const auto& events = parser.get_events();
+        vector<string> keys;
+        keys.reserve(events.size());
+        for (auto& kv : events) keys.push_back(kv.first);
+        sort(keys.begin(), keys.end());
+
+        string actual;
+        for (auto& key : keys)
+            actual += print(events.at(key)) + "\n";
+
+        if (actual != expected) {
+            std::cout << "AST mismatch!\n";
+            std::cout << "Expected:\n" << expected;
+            std::cout << "Actual:\n" << actual;
+            failed_tests_parser.push_back(test_name);
+        }
     }
-
-    Parser parser = Parser();
-    parser.set_storage_manager(storage.get());
-
-    parser.parse_script();
-
-    const auto& events = parser.get_events();
-    vector<string> keys;
-
-    keys.reserve(events.size());
-    for (auto& kv : events) keys.push_back(kv.first);
-
-    sort(keys.begin(), keys.end());
-
-    std::string actual;
-    for (auto& key : keys) {
-        actual += print(events.at(key)) + "\n";
-    }
-
-    if (actual != expected) {
-        std::cerr << "AST mismatch!\n";
-        std::cerr << "Source: " << source << "\n";
-        std::cerr << "Expected: " << expected << "\n";
-        std::cerr << "Actual:   " << actual << "\n";
-        std::abort();
+    catch (const exception& e) {
+        std::cout << "Unexpected exception in test \"" << test_name << "\": "
+            << e.what() << "\n";
+        failed_tests_parser.push_back(test_name);
     }
 }
 
-void test_atomic() {
-    expect_ast("test event, command, ident",
+void expect_parse_error(const std::string& test_name,
+    const std::string& source)
+{
+    cout << "Running test: " << test_name << "\n";
+
+    try {
+        Scanner scanner(source);
+        auto tokens = scanner.scan_tokens();
+
+        unique_ptr<StorageManager> storage = std::make_unique<StorageManager>();
+        for (auto token : tokens) storage->add_token(token);
+
+        Parser parser;
+        parser.set_storage_manager(storage.get());
+        parser.parse_script();
+
+        std::cout << "Expected parse error, but parsing succeeded.\n";
+        failed_tests_parser.push_back(test_name);
+    }
+    catch (const std::exception&) {
+        std::cout << "Test \"" << test_name << "\" correctly failed.\n";
+    }
+}
+
+void test_atomic_success() {
+    std::cout << "Running atomic success tests..." << std::endl;
+
+    expect_ast("atomic: identifier",
         "on test:\n    x\n",
         "(Event test:\n"
         "\t(Command (Ident x))\n"
         ")\n"
     );
+
+    std::cout << "Atomic success tests completed." << std::endl;
+}
+
+void test_atomic_failure() {
+    std::cout << "Running atomic failure tests..." << std::endl;
+
+    expect_parse_error("atomic: number literal",
+        "on test:\n    123\n"
+    );
+
+    std::cout << "Atomic failure tests completed." << std::endl;
 }
 
 void run_parser_tests() {
-    cout << "Running parser tests..." << endl;
+    std::cout << "Running parser tests..." << std::endl;
 
-    test_atomic();
+    test_atomic_success();
+    test_atomic_failure();
 
-	cout << "Parser test completed." << endl;
+    if (failed_tests_parser.size() > 0) {
+        std::cout << "The following tests failed: " << std::endl;
+        for (auto& test : failed_tests_parser) {
+            std::cout << test << endl;
+        }
+        std::cout << "Parser tests did not pass." << std::endl;
+    } else {
+        std::cout << "Parser tests passed." << std::endl;
+    }
+
+    std::cout << "Parser test completed." << std::endl;
 }

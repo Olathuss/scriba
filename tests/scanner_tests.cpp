@@ -2,50 +2,70 @@
 #include <vector>
 #include <cassert>
 #include <utility>
+#include <string>
 
 #include "scriba/token.h"
 #include "scriba/token_type.h"
 #include "scriba/scanner.h"
+#include "scriba/errors/scanner_error.h"
 
-using namespace std;
 using namespace scriba;
 
-void assert_token(const Token& token, const TokenType& type, const string_view lexeme) {
+std::vector<std::string> failed_tests_scanner;
+
+bool assert_token(const Token& token, const TokenType& type, const std::string_view lexeme) {
 	if (token.get_type() != type || token.lexeme != lexeme) {
-		cout << "Expected: " << token_type_to_string(type) << " \"" << lexeme << "\"" << endl;
-		cout << "Actual: " << token_type_to_string(token.get_type()) << " \"" << token.lexeme << "\"" << endl;
-		cout << token.to_string() << endl;
-		assert(false);
+		std::cout << "Expected: " << token_type_to_string(type) << " \"" << lexeme << "\"" << std::endl;
+		std::cout << "Actual: " << token_type_to_string(token.get_type()) << " \"" << token.lexeme << "\"" << std::endl;
+		std::cout << token.to_string() << std::endl;
+		return false;
 	}
+	return true;
 }
 
 void test(
-	string test_name,
-	string source,
-	vector<pair<TokenType, string>> token_list) {
-	cout << "Running test: " << test_name << endl;
-	cout << "Source:\n" << source << endl;
+	std::string test_name,
+	std::string source,
+	std::vector<std::pair<TokenType, std::string>> token_list) {
+	std::cout << "Running test: " << test_name << std::endl;
+	std::cout << "Source:\n" << source << std::endl;
 
-	Scanner scanner = Scanner(source);
-	vector<Token> tokens = scanner.scan_tokens();
+	try {
+		Scanner scanner = Scanner(source);
+		std::vector<Token> tokens = scanner.scan_tokens();
 
-	token_list.insert(token_list.begin(), { TokenType::INDENT, "" });
-	token_list.push_back({ TokenType::END_OF_FILE, "\0" });
+		token_list.insert(token_list.begin(), { TokenType::INDENT, "" });
+		token_list.push_back({ TokenType::END_OF_FILE, "\0" });
 
-	if (tokens.size() != token_list.size()) {
-		cout << "Token count mismatch, expected: " << token_list.size() << " actual: " << tokens.size() << endl;
-		assert(false);
+		if (tokens.size() != token_list.size()) {
+			std::cout << "Token count mismatch, expected: " << token_list.size() << " actual: " << tokens.size() << std::endl;
+			assert(false);
+		}
+
+		for (int i = 0; i < token_list.size(); ++i) {
+			if (!assert_token(tokens[i], token_list[i].first, token_list[i].second)) {
+				failed_tests_scanner.push_back(test_name);
+				std::cout << "Test \"" << test_name << "\" failed." << std::endl;
+				return;
+			}
+		}
+
+		std::cout << "Test \"" << test_name << "\" complete." << std::endl;
 	}
-
-	for (int i = 0; i < token_list.size(); ++i) {
-		assert_token(tokens[i], token_list[i].first, token_list[i].second);
+	catch (const ScannerError& e) {
+		std::cout << "ScannerError in test \"" << test_name << "\": "
+			<< e.what() << "\n";
+		failed_tests_scanner.push_back(test_name);
 	}
-
-	cout << "Test \"" << test_name << "\" complete." << endl;
+	catch (const std::exception& e) {
+		std::cout << "Unhandled exception in test \"" << test_name << "\": "
+			<< e.what() << "\n";
+		failed_tests_scanner.push_back(test_name);
+	}
 }
 
 void test_tokens() {
-	cout << "Testing tokens..." << endl;
+	std::cout << "Testing tokens..." << std::endl;
 
 	test("Identifier", "x", {
 		{TokenType::IDENTIFIER, "x"}
@@ -67,11 +87,11 @@ void test_tokens() {
 		{TokenType::STRING, "\"hello world\""}
 		});
 
-	cout << "Token testing passed." << endl;
+	std::cout << "Token testing passed." << std::endl;
 }
 
 void test_keywords() {
-	cout << "Testing keywords..." << endl;
+	std::cout << "Testing keywords..." << std::endl;
 
 	test("Keyword", "on", {
 		{TokenType::ON, "on"}
@@ -97,11 +117,11 @@ void test_keywords() {
 		{TokenType::FALSE, "false"}
 		});
 
-	cout << "Keyword testing passed." << endl;
+	std::cout << "Keyword testing passed." << std::endl;
 }
 
 void test_operators() {
-	cout << "Testing operators..." << endl;
+	std::cout << "Testing operators..." << std::endl;
 
 	test("Operator", "=", {
 	{TokenType::ASSIGN, "="}
@@ -139,11 +159,11 @@ void test_operators() {
 		{TokenType::PAREN_CLOSE, ")"}
 		});
 
-	cout << "Operators testing passed." << endl;
+	std::cout << "Operators testing passed." << std::endl;
 }
 
 void test_comparison_operators() {
-	cout << "Testing comparison operators..." << endl;
+	std::cout << "Testing comparison operators..." << std::endl;
 
 	test("Comparison", "==", {
 	{TokenType::EQUAL, "=="}
@@ -169,11 +189,11 @@ void test_comparison_operators() {
 		{TokenType::GREATER_EQUAL, ">="}
 		});
 
-	cout << "Comparison Operators testing passed." << endl;
+	std::cout << "Comparison Operators testing passed." << std::endl;
 }
 
 void test_misc() {
-	cout << "Testing misc..." << endl;
+	std::cout << "Testing misc..." << std::endl;
 
 	test("Misc", ":", {
 	{TokenType::COLON, ":"}
@@ -208,11 +228,11 @@ void test_misc() {
 		});
 
 
-	cout << "Misc testing passed." << endl;
+	std::cout << "Misc testing passed." << std::endl;
 }
 
 void test_sequences() {
-	cout << "Testing sequences..." << endl;
+	std::cout << "Testing sequences..." << std::endl;
 
 	test("Sequence: assignment", "x = 5", {
 	{TokenType::IDENTIFIER, "x"},
@@ -321,11 +341,11 @@ void test_sequences() {
 	{TokenType::NUMBER, "5"}
 		});
 
-	cout << "Sequences testing passed." << endl;
+	std::cout << "Sequences testing passed." << std::endl;
 }
 
 void test_edge_cases() {
-	cout << "Testing edge cases..." << endl;
+	std::cout << "Testing edge cases..." << std::endl;
 
 	test("Edge: range-like", "1..10", {
 	{TokenType::NUMBER, "1"},
@@ -427,11 +447,11 @@ void test_edge_cases() {
 	{TokenType::NUMBER, "1"}
 		});
 
-	cout << "Edge case testing passed." << endl;
+	std::cout << "Edge case testing passed." << std::endl;
 }
 
 void run_scanner_tests() {
-	cout << "Running scanner tests..." << endl;
+	std::cout << "Running scanner tests..." << std::endl;
 
 	test_tokens();
 	test_keywords();
@@ -440,6 +460,16 @@ void run_scanner_tests() {
 	test_misc();
 	test_sequences();
 	test_edge_cases();
+
+	if (failed_tests_scanner.size() > 0) {
+		std::cout << "The following tests failed: " << std::endl;
+		for (auto& test : failed_tests_scanner) {
+			std::cout << test << std::endl;
+		}
+		std::cout << "Scanner tests did not pass." << std::endl;
+	} else {
+		std::cout << "Scanner tests passed." << std::endl;
+	}
 	
-	cout << "Scanner tests completed." << endl;
+	std::cout << "Scanner tests completed." << std::endl;
 }

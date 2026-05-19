@@ -89,7 +89,7 @@ namespace scriba {
             return parse_identifier_statement();
         }
 
-        throw ParseError("This doesn’t start a valid statement.", peek());
+        throw ParseError("This doesn't start a valid statement.", peek());
     }
 
     std::unique_ptr<Statement> Parser::parse_if_statement()
