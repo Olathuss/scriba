@@ -248,12 +248,14 @@ namespace scriba {
         }
         return parse_postfix();
     }
-
+    
     std::unique_ptr<Expression> Parser::parse_postfix()
     {
         auto expression = parse_primary();
 
-        if (match(TokenType::DOT)) {
+        if (peek().get_type() == TokenType::DOT // Make sure expression isn't range
+            && peek_next().get_type() != TokenType::DOT
+            && match(TokenType::DOT)) {
             expression = parse_member_chain(std::move(expression));
         }
         return expression;

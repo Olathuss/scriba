@@ -120,6 +120,62 @@ void test_atomic_success() {
         ")\n"
     );
 
+    expect_ast("atomic: array number argument",
+        "on test:\n    x [1, 2, 3]\n",
+        "(Event test:\n"
+        "\t(Command (Ident x) (Array (Literal 1) (Literal 2) (Literal 3)))\n"
+        ")\n"
+    );
+
+    expect_ast("atomic: array string argument",
+        "on test:\n    x [\"hello\", \"world\"]\n",
+        "(Event test:\n"
+        "\t(Command (Ident x) (Array (Literal \"hello\") (Literal \"world\")))\n"
+        ")\n"
+    );
+
+    expect_ast("atomic: array identifier argument",
+        "on test:\n    x [hello, world]\n",
+        "(Event test:\n"
+        "\t(Command (Ident x) (Array (Ident hello) (Ident world)))\n"
+        ")\n"
+    );
+
+    expect_ast("atomic: empty array argument",
+        "on test:\n    x []\n",
+        "(Event test:\n"
+        "\t(Command (Ident x) (Array))\n"
+        ")\n"
+    );
+
+    expect_ast("atomic: nested array argument",
+        "on test:\n    x [1, [2, 3], 4]\n",
+        "(Event test:\n"
+        "\t(Command (Ident x) (Array (Literal 1) (Array (Literal 2) (Literal 3)) (Literal 4)))\n"
+        ")\n"
+    );
+
+    expect_ast("atomic: array grouping argument",
+        "on test:\n    x [(1), (2)]\n",
+        "(Event test:\n"
+        "\t(Command (Ident x) (Array (Group (Literal 1)) (Group (Literal 2))))\n"
+        ")\n"
+    );
+
+    expect_ast("atomic: array member access argument",
+        "on test:\n    x [a.b, c.d]\n",
+        "(Event test:\n"
+        "\t(Command (Ident x) (Array (Member (Ident a) b) (Member (Ident c) d)))\n"
+        ")\n"
+    );
+
+    expect_ast("atomic: array range argument",
+        "on test:\n    x [1..5]\n",
+        "(Event test:\n"
+        "\t(Command (Ident x) (Array (Range (Literal 1) (Literal 5))))\n"
+        ")\n"
+    );
+
     std::cout << "Atomic (success) tests completed." << std::endl;
 }
 
