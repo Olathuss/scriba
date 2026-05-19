@@ -235,11 +235,112 @@ void test_atomic_failure() {
     std::cout << "Atomic (failure) tests completed." << std::endl;
 }
 
+void test_unary_success() {
+    expect_ast("unary: negative literal",
+        "on test:\n    x -1\n",
+        "(Event test:\n"
+        "\t(Command (Ident x) (Unary - (Literal 1)))\n"
+        ")\n"
+    );
+
+    expect_ast("unary: not literal",
+        "on test:\n    x !1\n",
+        "(Event test:\n"
+        "\t(Command (Ident x) (Unary ! (Literal 1)))\n"
+        ")\n"
+    );
+
+    expect_ast("unary: negative identifier",
+        "on test:\n    x -y\n",
+        "(Event test:\n"
+        "\t(Command (Ident x) (Unary - (Ident y)))\n"
+        ")\n"
+    );
+
+    expect_ast("unary: not identifier",
+        "on test:\n    x !flag\n",
+        "(Event test:\n"
+        "\t(Command (Ident x) (Unary ! (Ident flag)))\n"
+        ")\n"
+    );
+
+    expect_ast("unary: grouping",
+        "on test:\n    x -(1)\n",
+        "(Event test:\n"
+        "\t(Command (Ident x) (Unary - (Group (Literal 1))))\n"
+        ")\n"
+    );
+
+    expect_ast("unary: member access",
+        "on test:\n    x -a.b\n",
+        "(Event test:\n"
+        "\t(Command (Ident x) (Unary - (Member (Ident a) b)))\n"
+        ")\n"
+    );
+
+    expect_ast("unary: member access",
+        "on test:\n    x !a.b.c\n",
+        "(Event test:\n"
+        "\t(Command (Ident x) (Unary ! (Member (Member (Ident a) b) c)))\n"
+        ")\n"
+    );
+
+    expect_ast("unary: array literal",
+        "on test:\n    x -[1,2]\n",
+        "(Event test:\n"
+        "\t(Command (Ident x) (Unary - (Array (Literal 1) (Literal 2))))\n"
+        ")\n"
+    );
+
+    expect_ast("unary: array literal",
+        "on test:\n    x ![1,2]\n",
+        "(Event test:\n"
+        "\t(Command (Ident x) (Unary ! (Array (Literal 1) (Literal 2))))\n"
+        ")\n"
+    );
+
+    expect_ast("unary: range",
+        "on test:\n    x -(1..5)\n",
+        "(Event test:\n"
+        "\t(Command (Ident x) (Unary - (Group (Range (Literal 1) (Literal 5)))))\n"
+        ")\n"
+    );
+
+    expect_ast("unary: range",
+        "on test:\n    x !(1..5)\n",
+        "(Event test:\n"
+        "\t(Command (Ident x) (Unary ! (Group (Range (Literal 1) (Literal 5)))))\n"
+        ")\n"
+    );
+
+    expect_ast("unary: chain",
+        "on test:\n    x !!-y\n",
+        "(Event test:\n"
+        "\t(Command (Ident x) (Unary ! (Unary ! (Unary - (Ident y)))))\n"
+        ")\n"
+    );
+
+    expect_ast("unary: after postfix",
+        "on test:\n    x -a.b\n",
+        "(Event test:\n"
+        "\t(Command (Ident x) (Unary - (Member (Ident a) b)))\n"
+        ")\n"
+    );
+
+    expect_ast("unary: grouping tightness",
+        "on test:\n    x !((1))\n",
+        "(Event test:\n"
+        "\t(Command (Ident x) (Unary ! (Group (Group (Literal 1)))))\n"
+        ")\n"
+    );
+}
+
 void run_parser_tests() {
     std::cout << "Running parser tests..." << std::endl;
 
     test_atomic_success();
     test_atomic_failure();
+    test_unary_success();
 
     parser_tests_failed = failed_tests_parser.size();
 
