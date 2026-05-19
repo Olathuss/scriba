@@ -377,6 +377,7 @@ namespace scriba {
         case TokenType::STRING:
         case TokenType::ARRAY:
         case TokenType::PAREN_OPEN:
+        case TokenType::BRACKET_OPEN:
         case TokenType::MINUS:
         case TokenType::NOT:
         case TokenType::TRUE:
