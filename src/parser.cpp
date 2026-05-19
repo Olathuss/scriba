@@ -246,7 +246,17 @@ namespace scriba {
             auto right = parse_unary();
             return std::make_unique<UnaryExpression>(previous(), std::move(right));
         }
-        return parse_primary();
+        return parse_postfix();
+    }
+
+    std::unique_ptr<Expression> Parser::parse_postfix()
+    {
+        auto expression = parse_primary();
+
+        if (match(TokenType::DOT)) {
+            expression = parse_member_chain(std::move(expression));
+        }
+        return expression;
     }
 
     std::unique_ptr<Expression> Parser::parse_primary()

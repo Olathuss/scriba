@@ -73,6 +73,8 @@ namespace scriba {
 
         std::unique_ptr<Expression> parse_unary();
 
+        std::unique_ptr<Expression> parse_postfix();
+
         std::unique_ptr<Expression> parse_primary();
 
         std::unique_ptr<ArrayLiteralExpression> parse_array_literal();
