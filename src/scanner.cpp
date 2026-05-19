@@ -69,10 +69,10 @@ namespace scriba {
                 add_token(match('=') ? TokenType::GREATER_EQUAL : TokenType::GREATER_THAN);
                 break;
 
-            case '+': add_token(TokenType::PLUS); break;
-            case '-': add_token(TokenType::MINUS); break;
-            case '*': add_token(TokenType::STAR); break;
-            case '/': add_token(TokenType::SLASH); break;
+            case '+': add_token(TokenType::PLUS, "+"); break;
+            case '-': add_token(TokenType::MINUS, "-"); break;
+            case '*': add_token(TokenType::STAR, "*"); break;
+            case '/': add_token(TokenType::SLASH, "/"); break;
 
             case '(': add_token(TokenType::PAREN_OPEN); break;
             case ')': add_token(TokenType::PAREN_CLOSE); break;
@@ -87,7 +87,7 @@ namespace scriba {
                 add_token(TokenType::BRACKET_CLOSE); break;
 
             case ',':
-                add_token(TokenType::COMMA); break;
+                add_token(TokenType::COMMA, ","); break;
 
             case '\n':
                 handle_newline();

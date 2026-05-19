@@ -243,8 +243,9 @@ namespace scriba {
     std::unique_ptr<Expression> Parser::parse_unary()
     {
         if (match(TokenType::NOT) || match(TokenType::MINUS)) {
+            Token token = previous();
             auto right = parse_unary();
-            return std::make_unique<UnaryExpression>(previous(), std::move(right));
+            return std::make_unique<UnaryExpression>(token, std::move(right));
         }
         return parse_postfix();
     }
