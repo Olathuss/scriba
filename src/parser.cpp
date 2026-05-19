@@ -232,7 +232,7 @@ namespace scriba {
         auto expression = parse_unary();
 
         while (match(TokenType::SLASH) || match(TokenType::STAR)) {
-            Token op = advance();
+            Token op = previous();
             auto right = parse_unary();
             expression = std::make_unique<BinaryExpression>(op, std::move(expression), std::move(right));
         }
