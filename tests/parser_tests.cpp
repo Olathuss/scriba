@@ -335,12 +335,221 @@ void test_unary_success() {
     );
 }
 
+void test_unary_failure() {
+    std::cout << "Running unary failure tests..." << std::endl;
+
+    expect_parse_error("unary: missing operand after minus",
+        "on test:\n    x -\n"
+    );
+
+    expect_parse_error("unary: missing operand after not",
+        "on test:\n    x !\n"
+    );
+
+    expect_parse_error("unary: invalid token after minus",
+        "on test:\n    x -,\n"
+    );
+
+    expect_parse_error("unary: invalid token after not",
+        "on test:\n    x !,\n"
+    );
+
+    expect_parse_error("unary: unexpected ')' after unary operator",
+        "on test:\n    x -)\n"
+    );
+
+    expect_parse_error("unary: unexpected ']' after unary operator",
+        "on test:\n    x !]\n"
+    );
+
+    expect_parse_error("unary: missing operand before comma",
+        "on test:\n    x [ - , 1 ]\n"
+    );
+    
+    expect_parse_error("unary: invalid range start",
+        "on test:\n    x -..5\n"
+    );
+    
+    expect_parse_error("unary: missing right operand of range",
+        "on test:\n    x 1..-\n"
+    );
+    
+    expect_parse_error("unary: missing operand inside grouping",
+        "on test:\n    x (-)\n"
+    );
+    
+    expect_parse_error("unary: missing operand in array element",
+        "on test:\n    x [-]\n"
+    );
+    
+    expect_parse_error("unary: expected identifier after '.'",
+        "on test:\n    x a.-b\n"
+    );
+    
+    expect_parse_error("unary: missing operand before member access",
+        "on test:\n    x -.b\n"
+    );
+
+    std::cout << "Unary (failure) tests completed." << std::endl;
+}
+
+void test_binary_success() {
+    expect_ast("binary: addition",
+        "on test:\n    x 1 + 2\n",
+        "(Event test:\n"
+        "\t(Command (Ident x) (Binary + (Literal 1) (Literal 2)))\n"
+        ")\n"
+    );
+    
+    expect_ast("binary: subtraction",
+        "on test:\n    x 54 - 25\n",
+        "(Event test:\n"
+        "\t(Command (Ident x) (Binary - (Literal 54) (Literal 25)))\n"
+        ")\n"
+    );
+    
+    expect_ast("binary: multiplication",
+        "on test:\n    x 123 * 256\n",
+        "(Event test:\n"
+        "\t(Command (Ident x) (Binary * (Literal 123) (Literal 256)))\n"
+        ")\n"
+    );
+    
+    expect_ast("binary: division",
+        "on test:\n    x 8 / 2\n",
+        "(Event test:\n"
+        "\t(Command (Ident x) (Binary / (Literal 8) (Literal 2)))\n"
+        ")\n"
+    );
+    
+    expect_ast("binary: precedence * over +",
+        "on test:\n    x 1 + 2 * 3\n",
+        "(Event test:\n"
+        "\t(Command (Ident x) (Binary + (Literal 1) (Binary * (Literal 2) (Literal 3))))\n"
+        ")\n"
+    );
+    
+    expect_ast("binary: precedence / over -",
+        "on test:\n    x 10 - 6 / 2\n",
+        "(Event test:\n"
+        "\t(Command (Ident x) (Binary - (Literal 10) (Binary / (Literal 6) (Literal 2))))\n"
+        ")\n"
+    );
+    
+    expect_ast("binary: associativity left",
+        "on test:\n    x 1 - 2 - 3\n",
+        "(Event test:\n"
+        "\t(Command (Ident x) (Binary - (Binary - (Literal 1) (Literal 2)) (Literal 3)))\n"
+        ")\n"
+    );
+    
+    expect_ast("binary: associativity left",
+        "on test:\n    x (1 + 2) * 3\n",
+        "(Event test:\n"
+        "\t(Command (Ident x) (Binary * (Group (Binary + (Literal 1) (Literal 2))) (Literal 3)))\n"
+        ")\n"
+    );
+
+    expect_ast("binary: comparison less",
+        "on test:\n    x 1 < 2\n",
+        "(Event test:\n"
+        "\t(Command (Ident x) (Binary < (Literal 1) (Literal 2)))\n"
+        ")\n"
+    );
+
+    expect_ast("binary: comparison greater",
+        "on test:\n    x 1 > 2\n",
+        "(Event test:\n"
+        "\t(Command (Ident x) (Binary > (Literal 1) (Literal 2)))\n"
+        ")\n"
+    );
+    
+    expect_ast("binary: comparison less or equal",
+        "on test:\n    x 3 <= 2\n",
+        "(Event test:\n"
+        "\t(Command (Ident x) (Binary <= (Literal 3) (Literal 2)))\n"
+        ")\n"
+    );
+
+    expect_ast("binary: comparison greater or equal",
+        "on test:\n    x 4 >= 2\n",
+        "(Event test:\n"
+        "\t(Command (Ident x) (Binary >= (Literal 4) (Literal 2)))\n"
+        ")\n"
+    );
+
+    expect_ast("binary: equality equal",
+        "on test:\n    x a == b\n",
+        "(Event test:\n"
+        "\t(Command (Ident x) (Binary == (Ident a) (Ident b)))\n"
+        ")\n"
+    );
+
+    expect_ast("binary: equality equal",
+        "on test:\n    x a != b\n",
+        "(Event test:\n"
+        "\t(Command (Ident x) (Binary != (Ident a) (Ident b)))\n"
+        ")\n"
+    );
+
+    expect_ast("binary: precedence comparison over equality",
+        "on test:\n    x 1 < 2 == true\n",
+        "(Event test:\n"
+        "\t(Command (Ident x) (Binary == (Binary < (Literal 1) (Literal 2)) (Literal true)))\n"
+        ")\n"
+    );
+
+    expect_ast("binary: unary inside binary",
+        "on test:\n    x -1 + 2\n",
+        "(Event test:\n"
+        "\t(Command (Ident x) (Binary + (Unary - (Literal 1)) (Literal 2)))\n"
+        ")\n"
+    );
+
+    expect_ast("binary: member access inside binary",
+        "on test:\n    x a.b + c.d\n",
+        "(Event test:\n"
+        "\t(Command (Ident x) (Binary + (Member (Ident a) b) (Member (Ident c) d)))\n"
+        ")\n"
+    );
+
+    expect_ast("binary: array inside binary",
+        "on test:\n    x [1,2] + [3,4]\n",
+        "(Event test:\n"
+        "\t(Command (Ident x) (Binary + (Array (Literal 1) (Literal 2)) (Array (Literal 3) (Literal 4))))\n"
+        ")\n"
+    );
+
+    expect_ast("binary: arithmetic inside range",
+        "on test:\n    x 1+1..2+2\n",
+        "(Event test:\n"
+        "\t(Command (Ident x) (Range (Binary + (Literal 1) (Literal 1)) (Binary + (Literal 2) (Literal 2))))\n"
+        ")\n"
+    );
+
+    expect_ast("binary: grouping and range",
+        "on test:\n    x (a+b)..(c+d)\n",
+        "(Event test:\n"
+        "\t(Command (Ident x) (Range (Group (Binary + (Ident a) (Ident b))) (Group (Binary + (Ident c) (Ident d)))))\n"
+        ")\n"
+    );
+
+    expect_ast("binary: complex mixed",
+        "on test:\n    x a.b * (1 + 2) == c.d / 3\n",
+        "(Event test:\n"
+        "\t(Command (Ident x) (Binary == (Binary * (Member (Ident a) b) (Group (Binary + (Literal 1) (Literal 2)))) (Binary / (Member (Ident c) d) (Literal 3))))\n"
+        ")\n"
+    );
+}
+
 void run_parser_tests() {
     std::cout << "Running parser tests..." << std::endl;
 
     test_atomic_success();
     test_atomic_failure();
     test_unary_success();
+    test_unary_failure();
+    test_binary_success();
 
     parser_tests_failed = failed_tests_parser.size();
 
