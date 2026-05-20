@@ -7,6 +7,8 @@ namespace scriba {
 		case TokenType::TRIGGER: return "TRIGGER";
 		case TokenType::IF: return "IF";
 		case TokenType::ELSE: return "ELSE";
+		case TokenType::AND: return "AND";
+		case TokenType::OR: return "OR";
 		case TokenType::TRUE: return "TRUE";
 		case TokenType::FALSE: return "FALSE";
 		case TokenType::IDENTIFIER: return "IDENTIFIER";

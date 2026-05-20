@@ -177,11 +177,38 @@ namespace scriba {
 
     std::unique_ptr<Expression> Parser::parse_range()
     {
+        auto expression = parse_logical_or();
+
+        while (match(TokenType::DOT)) {
+            if (!match(TokenType::DOT)) {
+                throw ParseError("Expected '..' for range operator", peek());
+            }
+            auto right = parse_logical_or();
+            expression = std::make_unique<RangeExpression>(std::move(expression), std::move(right));
+        }
+
+        return expression;
+    }
+
+    std::unique_ptr<Expression> Parser::parse_logical_or()
+    {
+        auto expression = parse_logical_and();
+
+        while (match(TokenType::OR)) {
+            auto right = parse_logical_and();
+            expression = std::make_unique<OrExpression>(std::move(expression), std::move(right));
+        }
+
+        return expression;
+    }
+
+    std::unique_ptr<Expression> Parser::parse_logical_and()
+    {
         auto expression = parse_equality();
 
-        while (match(TokenType::DOT) && match(TokenType::DOT)) {
+        while (match(TokenType::AND)) {
             std::unique_ptr<Expression> right = parse_equality();
-            expression = std::make_unique<RangeExpression>(std::move(expression), std::move(right));
+            expression = std::make_unique<AndExpression>(std::move(expression), std::move(right));
         }
 
         return expression;
@@ -193,7 +220,7 @@ namespace scriba {
 
         while (match(TokenType::EQUAL) || match(TokenType::NOT_EQUAL)) {
             Token op = previous();
-            std::unique_ptr<Expression> right = parse_comparison();
+            auto right = parse_comparison();
             expression = std::make_unique<BinaryExpression>(op, std::move(expression), std::move(right));
         }
 

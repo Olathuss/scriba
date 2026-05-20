@@ -40,6 +40,18 @@ string print(const unique_ptr<Expression>& in_expr)
             print(expr->right) + ")";
     }
 
+    if (auto expr = dynamic_cast<const AndExpression*>(in_expr.get())) {
+        return "(And " +
+            print(expr->left) + " " +
+            print(expr->right) + ")";
+    }
+
+    if (auto expr = dynamic_cast<const OrExpression*>(in_expr.get())) {
+        return "(Or " +
+            print(expr->left) + " " +
+            print(expr->right) + ")";
+    }
+
     if (auto expr = dynamic_cast<const RangeExpression*>(in_expr.get())) {
         return "(Range " +
             print(expr->left) + " " +

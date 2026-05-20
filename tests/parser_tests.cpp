@@ -443,7 +443,7 @@ void test_binary_success() {
         ")\n"
     );
     
-    expect_ast("binary: associativity left",
+    expect_ast("binary: grouping overrides precedence",
         "on test:\n    x (1 + 2) * 3\n",
         "(Event test:\n"
         "\t(Command (Ident x) (Binary * (Group (Binary + (Literal 1) (Literal 2))) (Literal 3)))\n"
@@ -482,6 +482,20 @@ void test_binary_success() {
         "on test:\n    x a == b\n",
         "(Event test:\n"
         "\t(Command (Ident x) (Binary == (Ident a) (Ident b)))\n"
+        ")\n"
+    );
+
+    expect_ast("binary: and",
+        "on test:\n    x a and b\n",
+        "(Event test:\n"
+        "\t(Command (Ident x) (And (Ident a) (Ident b)))\n"
+        ")\n"
+    );
+
+    expect_ast("binary: or",
+        "on test:\n    x a or b\n",
+        "(Event test:\n"
+        "\t(Command (Ident x) (Or (Ident a) (Ident b)))\n"
         ")\n"
     );
 
@@ -540,6 +554,184 @@ void test_binary_success() {
         "\t(Command (Ident x) (Binary == (Binary * (Member (Ident a) b) (Group (Binary + (Literal 1) (Literal 2)))) (Binary / (Member (Ident c) d) (Literal 3))))\n"
         ")\n"
     );
+
+    expect_ast("binary: precedence and over or",
+        "on test:\n    x a or b and c\n",
+        "(Event test:\n"
+        "\t(Command (Ident x) (Or (Ident a) (And (Ident b) (Ident c))))\n"
+        ")\n"
+    );
+
+    expect_ast("binary: equality inside logical and",
+        "on test:\n    x a == b and c == d\n",
+        "(Event test:\n"
+        "\t(Command (Ident x) (And (Binary == (Ident a) (Ident b)) (Binary == (Ident c) (Ident d))))\n"
+        ")\n"
+    );
+
+    std::cout << "Binary (success) tests completed." << std::endl;
+}
+
+void test_binary_failure() {
+    std::cout << "Running binary failure tests..." << std::endl;
+
+    expect_parse_error("binary: missing operand for +",
+        "on test:\n    x 1 +\n"
+    );
+
+    expect_parse_error("binary: missing operand for -",
+        "on test:\n    x 1 -\n"
+    );
+
+    expect_parse_error("binary: missing operand for *",
+        "on test:\n    x 1 *\n"
+    );
+
+    expect_parse_error("binary: missing operand for /",
+        "on test:\n    x 1 /\n"
+    );
+
+    expect_parse_error("binary: missing operand for <",
+        "on test:\n    x 1 <\n"
+    );
+
+    expect_parse_error("binary: missing operand for >",
+        "on test:\n    x 1 >\n"
+    );
+
+    expect_parse_error("binary: missing operand for <=",
+        "on test:\n    x 1 <=\n"
+    );
+
+    expect_parse_error("binary: missing operand for >=",
+        "on test:\n    x 1 >=\n"
+    );
+
+    expect_parse_error("binary: missing operand for ==",
+        "on test:\n    x 1 ==\n"
+    );
+
+    expect_parse_error("binary: missing operand for !=",
+        "on test:\n    x 1 !=\n"
+    );
+
+    expect_parse_error("binary: missing left operand for +",
+        "on test:\n    x + 1\n"
+    );
+
+    expect_parse_error("binary: missing left operand for *",
+        "on test:\n    x * 2\n"
+    );
+
+    expect_parse_error("binary: missing left operand for ==",
+        "on test:\n    x == 25\n"
+    );
+
+    expect_parse_error("binary: missing left operand for <",
+        "on test:\n    x < 6\n"
+    );
+
+    expect_parse_error("binary: missing left operand for >",
+        "on test:\n    x > 3\n"
+    );
+
+    expect_parse_error("binary: invalid operator sequence ++",
+        "on test:\n    x 1 ++ 2\n"
+    );
+
+    expect_parse_error("binary: invalid operator sequence +*",
+        "on test:\n    x 1 +* 2\n"
+    );
+
+    expect_parse_error("binary: invalid operator sequence ==<",
+        "on test:\n    x 1 ==< 2\n"
+    );
+
+    expect_parse_error("binary: invalid operator sequence */",
+        "on test:\n    x 1 */ 2\n"
+    );
+
+    expect_parse_error("binary: invalid operator sequence !==",
+        "on test:\n    x a !== b\n"
+    );
+
+    expect_parse_error("binary: operator before range",
+        "on test:\n    x 1 + ..5\n"
+    );
+
+    expect_parse_error("binary: operator after range",
+        "on test:\n    x 1.. + 5\n"
+    );
+
+    expect_parse_error("binary: missing operand inside grouping",
+        "on test:\n    x (1 + )\n"
+    );
+
+    expect_parse_error("binary: missing operand inside grouping 2",
+        "on test:\n    x ( + 1)\n"
+    );
+
+    expect_parse_error("binary: missing operand inside array",
+        "on test:\n    x [1 + ,2]\n"
+    );
+
+    expect_parse_error("binary: missing operand inside array 2",
+        "on test:\n    x [ , 1 + 2]\n"
+    );
+
+    expect_parse_error("binary: missing operand inside array 3",
+        "on test:\n    x [ 1, 2 *]\n"
+    );
+
+    expect_parse_error("binary: operator before member access",
+        "on test:\n    x 1 + .a\n"
+    );
+
+    expect_parse_error("binary: operator after member access dot",
+        "on test:\n    x a. + b\n"
+    );
+
+    expect_parse_error("binary: missing operand inside range",
+        "on test:\n    x 1..2+\n"
+    );
+
+    expect_parse_error("binary: missing operand inside range 2",
+        "on test:\n    x 1+..2\n"
+    );
+
+    expect_parse_error("binary: missing operand inside range 3",
+        "on test:\n    x 1..+2\n"
+    );
+
+    expect_parse_error("binary: trailing operator",
+        "on test:\n    x 1 + 2 -\n"
+    );
+
+    expect_parse_error("binary: trailing operator 2",
+        "on test:\n    x a == b and\n"
+    );
+
+    expect_parse_error("binary: trailing operator 3",
+        "on test:\n    x a == b or\n"
+    );
+
+    expect_parse_error("binary: leading operator",
+        "on test:\n    x * a\n"
+    );
+
+    expect_parse_error("binary: leading operator 2",
+        "on test:\n    x == a\n"
+    );
+
+    expect_parse_error("binary: operator between member access",
+        "on test:\n    x a.b + .c\n"
+    );
+
+    expect_parse_error("binary: operator after array literal",
+        "on test:\n    x [1,2] + ,3\n"
+    );
+
+    std::cout << "Binary (failure) tests completed." << std::endl;
 }
 
 void run_parser_tests() {
@@ -550,6 +742,7 @@ void run_parser_tests() {
     test_unary_success();
     test_unary_failure();
     test_binary_success();
+    test_binary_failure();
 
     parser_tests_failed = failed_tests_parser.size();
 

@@ -7,6 +7,8 @@ namespace scriba {
 		TRIGGER,
 		IF,
 		ELSE,
+		AND,
+		OR,
 		TRUE,
 		FALSE,
 

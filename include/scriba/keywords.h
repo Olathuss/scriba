@@ -11,6 +11,8 @@ namespace scriba {
 			{"trigger", TokenType::TRIGGER},
 			{"if", TokenType::IF},
 			{"else", TokenType::ELSE},
+			{"and", TokenType::AND},
+			{"or", TokenType::OR},
 			{"true", TokenType::TRUE},
 			{"false", TokenType::FALSE}
 		};
@@ -28,6 +30,8 @@ namespace scriba {
 		case TokenType::TRIGGER:
 		case TokenType::IF:
 		case TokenType::ELSE:
+		case TokenType::AND:
+		case TokenType::OR:
 		case TokenType::TRUE:
 		case TokenType::FALSE:
 			return true;
