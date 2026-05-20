@@ -63,8 +63,6 @@ namespace scriba {
 
         std::unique_ptr<Expression> parse_expression();
 
-        std::unique_ptr<Expression> parse_range();
-
         std::unique_ptr<Expression> parse_logical_or();
 
         std::unique_ptr<Expression> parse_logical_and();
@@ -72,6 +70,8 @@ namespace scriba {
         std::unique_ptr<Expression> parse_equality();
 
         std::unique_ptr<Expression> parse_comparison();
+
+        std::unique_ptr<Expression> parse_range();
 
         std::unique_ptr<Expression> parse_term();
 

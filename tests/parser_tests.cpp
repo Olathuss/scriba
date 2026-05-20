@@ -734,6 +734,47 @@ void test_binary_failure() {
     std::cout << "Binary (failure) tests completed." << std::endl;
 }
 
+void full_expression_success() {
+    std::cout << "Running full expression success tests..." << std::endl;
+    
+    expect_ast("expr: unary + grouping + arithmetic",
+        "on test:\n    x -(1 + 2) * 3\n",
+        "(Event test:\n"
+        "\t(Command (Ident x) (Binary * (Unary - (Group (Binary + (Literal 1) (Literal 2)))) (Literal 3)))\n"
+        ")\n"
+    );
+
+    expect_ast("expr: unary + member + arithmetic",
+        "on test:\n    x -a.b + 5\n",
+        "(Event test:\n"
+        "\t(Command (Ident x) (Binary + (Unary - (Member (Ident a) b)) (Literal 5)))\n"
+        ")\n"
+    );
+
+    expect_ast("expr: logical and/or with arithmetic",
+        "on test:\n    x a + 1 and b * 2 or c\n",
+        "(Event test:\n"
+        "\t(Command (Ident x) (Or (And (Binary + (Ident a) (Literal 1)) (Binary * (Ident b) (Literal 2))) (Ident c)))\n"
+        ")\n"
+    );
+
+    expect_ast("expr: precedence and over or",
+        "on test:\n    x a or b and c\n",
+        "(Event test:\n"
+        "\t(Command (Ident x) (Or (Ident a) (And (Ident b) (Ident c))))\n"
+        ")\n"
+    );
+
+    expect_ast("expr: range with logical operators",
+        "on test:\n    x a and b..c or d\n",
+        "(Event test:\n"
+        "\t(Command (Ident x) (Or (And (Ident a) (Range (Ident b) (Ident c))) (Ident d)))\n"
+        ")\n"
+    );
+
+    std::cout << "Full Expression (success) tests completed." << std::endl;
+}
+
 void run_parser_tests() {
     std::cout << "Running parser tests..." << std::endl;
 
@@ -743,6 +784,7 @@ void run_parser_tests() {
     test_unary_failure();
     test_binary_success();
     test_binary_failure();
+    full_expression_success();
 
     parser_tests_failed = failed_tests_parser.size();
 
