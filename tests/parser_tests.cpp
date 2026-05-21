@@ -758,6 +758,13 @@ void full_expression_success() {
         ")\n"
     );
 
+    expect_ast("expr: equality inside logical and",
+        "on test:\n    x a == b and c == d\n",
+        "(Event test:\n"
+        "\t(Command (Ident x) (And (Binary == (Ident a) (Ident b)) (Binary == (Ident c) (Ident d))))\n"
+        ")\n"
+    );
+
     expect_ast("expr: precedence and over or",
         "on test:\n    x a or b and c\n",
         "(Event test:\n"
@@ -772,7 +779,75 @@ void full_expression_success() {
         ")\n"
     );
 
+    expect_ast("expr: range with arithmetic and grouping",
+        "on test:\n    x (1+2)..(3*4)\n",
+        "(Event test:\n"
+        "\t(Command (Ident x) "
+        "(Range (Group (Binary + (Literal 1) (Literal 2))) "
+        "(Group (Binary * (Literal 3) (Literal 4)))))\n"
+        ")\n"
+    );
+    
+    expect_ast("expr: deep mixed expression",
+        "on test:\n    x a.b * (1 + -2) == c.d / 3 and e or f..g\n",
+        "(Event test:\n"
+        "\t(Command (Ident x) (Or (And (Binary == "
+        "(Binary * (Member (Ident a) b) "
+        "(Group (Binary + (Literal 1) (Unary - (Literal 2))))) "
+        "(Binary / (Member (Ident c) d) (Literal 3))) "
+        "(Ident e)) (Range (Ident f) (Ident g))))\n"
+        ")\n"
+    );
+
     std::cout << "Full Expression (success) tests completed." << std::endl;
+}
+
+void full_expression_failure() {
+    std::cout << "Running full expression failure tests..." << std::endl;
+
+    expect_parse_error("fail: missing right operand for +",
+        "on test:\n    x a +\n");
+
+    expect_parse_error("fail: missing left operand for +",
+        "on test:\n    x + a\n");
+
+    expect_parse_error("fail: missing right operand for and",
+        "on test:\n    x a and\n");
+
+    expect_parse_error("fail: missing left operand for and",
+        "on test:\n    x and a\n");
+
+    expect_parse_error("fail: missing right operand for range",
+        "on test:\n    x a..\n");
+
+    expect_parse_error("fail: missing left operand for range",
+        "on test:\n    x ..a\n");
+
+    expect_parse_error("fail: triple dot",
+        "on test:\n    x a...b\n");
+
+    expect_parse_error("fail: invalid operator sequence",
+        "on test:\n    x a + * b\n");
+
+    expect_parse_error("fail: broken grouping",
+        "on test:\n    x (1 + 2\n");
+
+    expect_parse_error("fail: broken array",
+        "on test:\n    x [1, 2\n");
+
+    expect_parse_error("fail: double comma in array",
+        "on test:\n    x [1,,2]\n");
+
+    expect_parse_error("fail: member access missing property",
+        "on test:\n    x a.\n");
+
+    expect_parse_error("fail: unexpected token",
+        "on test:\n    x a @ b\n");
+
+    expect_parse_error("fail: unexpected EOF",
+        "on test:\n    x (1 +\n");
+
+    std::cout << "Full Expression (failure) tests completed." << std::endl;
 }
 
 void run_parser_tests() {
@@ -785,6 +860,7 @@ void run_parser_tests() {
     test_binary_success();
     test_binary_failure();
     full_expression_success();
+    full_expression_failure();
 
     parser_tests_failed = failed_tests_parser.size();
 
