@@ -3,6 +3,7 @@
 #include "scriba/errors/parse_error.h"
 
 #include <vector>
+#include <iostream>
 
 namespace scriba {
     Parser::Parser()
@@ -13,16 +14,16 @@ namespace scriba {
 
     void Parser::parse_script()
     {
-        indent_stack.push_back({ '\0', 0, 0 });
-
-        while (match(TokenType::NEWLINE)) {}
-
         while (!is_at_eof()) {
+            skip_empty();
+            reset_indentation_stack();
             EventBlock event = parse_event_block();
+            std::string event_name = event.event_token.lexeme;
             auto [it, inserted] = events.emplace(event.event_token.lexeme, std::move(event));
             if (!inserted) {
                 throw ParseError("Duplicate event name '" + event.event_token.lexeme + "' forbidden.", event.event_token);
             }
+            event_order.push_back(event_name);
 
             while (match(TokenType::NEWLINE));
         }
@@ -30,9 +31,9 @@ namespace scriba {
 
     EventBlock Parser::parse_event_block()
     {
-        Token event_indent = consume(TokenType::INDENT, ""); // indent should be empty
-        if (event_indent.indent.indent_level != 0) {
-            throw ParseError("Event declaration should not be indented.", event_indent);
+        skip_empty();
+        if (match(TokenType::INDENT)) {
+            throw ParseError("Event declaration should not be indented.", previous());
         }
         consume(TokenType::ON, "Expected 'on' at beginning of event block.");
 
@@ -396,6 +397,17 @@ namespace scriba {
         return current;
     }
 
+    void Parser::skip_empty()
+    {
+        while (!is_at_eof() && match(TokenType::NEWLINE)) {}
+
+        while (!is_at_eof()
+            && peek().get_type() == TokenType::INDENT
+            && peek_next().get_type() == TokenType::NEWLINE) {
+            advance(); advance();
+        }
+    }
+
     bool Parser::is_operator(const TokenType& type) {
         return false;
     }
@@ -428,10 +440,17 @@ namespace scriba {
     {
         if (is_at_eof()) return false;
         if (!check(TokenType::INDENT)) {
-            throw ParseError("Indentation expected", peek());
+            return false;
         }
 
+        skip_empty();
+
         Token indent_token = peek();
+
+        if (indent_token.indent.indent_char == '/0' && indent_stack.size() > 1) {
+            decrease_indent(indent_token);
+        }
+
         IndentLevel current_indent = normalize_indent(indent_token);
         int indent_diff = compare_indent(current_indent, block_indent);
         if (indent_diff > 0) {

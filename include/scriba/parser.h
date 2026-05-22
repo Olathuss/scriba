@@ -30,6 +30,7 @@ namespace scriba {
     private:
         StorageManager* storage = nullptr;
 
+        std::vector<std::string> event_order;
         std::unordered_map<std::string, EventBlock> events;
 
         std::vector<IndentLevel> indent_stack;
@@ -42,6 +43,8 @@ namespace scriba {
         }
 
         const std::unordered_map<std::string, EventBlock>& get_events() const { return events; }
+
+        const std::vector<std::string>& get_event_names() const { return event_order; }
 
         void parse_script();
 
@@ -106,6 +109,8 @@ namespace scriba {
 
         Token consume(const TokenType& type, const std::string& message);
 
+        void skip_empty();
+
         bool is_operator(const TokenType& type);
 
         bool token_can_start_expression(const TokenType& token) const;
@@ -121,5 +126,10 @@ namespace scriba {
         void increase_indent(const Token& indent_token);
 
         void decrease_indent(const Token& indent_token);
+
+        void reset_indentation_stack() {
+            indent_stack.clear();
+            indent_stack.push_back({ '\0', 0, 0 });
+        }
     };
 } // namespace scriba

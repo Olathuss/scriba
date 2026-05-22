@@ -28,7 +28,7 @@ void expect_ast(const std::string& test_name,
         Scanner scanner(source);
         auto tokens = scanner.scan_tokens();
 
-        unique_ptr<StorageManager> storage = std::make_unique<StorageManager>();
+        std::unique_ptr<StorageManager> storage = std::make_unique<StorageManager>();
         for (auto token : tokens) storage->add_token(token);
 
         Parser parser;
@@ -36,12 +36,9 @@ void expect_ast(const std::string& test_name,
         parser.parse_script();
 
         const auto& events = parser.get_events();
-        vector<string> keys;
-        keys.reserve(events.size());
-        for (auto& kv : events) keys.push_back(kv.first);
-        sort(keys.begin(), keys.end());
+        const auto& keys = parser.get_event_names();
 
-        string actual;
+        std::string actual;
         for (auto& key : keys)
             actual += print(events.at(key)) + "\n";
 
@@ -850,6 +847,171 @@ void full_expression_failure() {
     std::cout << "Full Expression (failure) tests completed." << std::endl;
 }
 
+void command_success() {
+    std::cout << "Running command success tests..." << std::endl;
+
+    expect_ast("cmd: no arguments",
+        "on test:\n    x\n",
+        "(Event test:\n"
+        "\t(Command (Ident x))\n"
+        ")\n"
+    );
+
+    expect_ast("cmd: one argument",
+        "on test:\n    x a\n",
+        "(Event test:\n"
+        "\t(Command (Ident x) (Ident a))\n"
+        ")\n"
+    );
+
+    expect_ast("cmd: multiple arguments",
+        "on test:\n    x a b c\n",
+        "(Event test:\n"
+        "\t(Command (Ident x) (Ident a) (Ident b) (Ident c))\n"
+        ")\n"
+    );
+
+    expect_ast("cmd: mixed expression arguments",
+        "on test:\n    x (1+2) a.b 3..4\n",
+        "(Event test:\n"
+        "\t(Command (Ident x) "
+        "(Group (Binary + (Literal 1) (Literal 2))) "
+        "(Member (Ident a) b) "
+        "(Range (Literal 3) (Literal 4)))\n"
+        ")\n"
+    );
+
+    expect_ast("cmd: unary and binary expressions",
+        "on test:\n    x -a b+1\n",
+        "(Event test:\n"
+        "\t(Command (Ident x) "
+        "(Unary - (Ident a)) "
+        "(Binary + (Ident b) (Literal 1)))\n"
+        ")\n"
+    );
+
+    std::cout << "Command success tests completed." << std::endl;
+}
+
+void command_failure() {
+    std::cout << "Running command failure tests..." << std::endl;
+
+    expect_parse_error("cmd fail: missing command name",
+        "on test:\n    123\n");
+
+    expect_parse_error("cmd fail: invalid command name",
+        "on test:\n    (a)\n");
+
+    expect_parse_error("cmd fail: stray comma",
+        "on test:\n    x a,\n");
+
+    expect_parse_error("cmd fail: double comma",
+        "on test:\n    x a,,b\n");
+
+    expect_parse_error("cmd fail: broken expression",
+        "on test:\n    x (1+2\n");
+
+    expect_parse_error("cmd fail: missing argument after operator",
+        "on test:\n    x a +\n");
+
+    expect_parse_error("cmd fail: unexpected token",
+        "on test:\n    x a @ b\n");
+
+    std::cout << "Command failure tests completed." << std::endl;
+}
+
+void event_block_success() {
+    std::cout << "Running event block (success) tests..." << std::endl;
+
+    expect_ast("event block: single command",
+        "on test:\n    x 1\n",
+        "(Event test:\n"
+        "\t(Command (Ident x) (Literal 1))\n"
+        ")\n"
+    );
+
+    expect_ast("event block: multiple command",
+        "on test:\n    x 1\n    y 2\n    z a+b\n",
+        "(Event test:\n"
+        "\t(Command (Ident x) (Literal 1))\n"
+        "\t(Command (Ident y) (Literal 2))\n"
+        "\t(Command (Ident z) (Binary + (Ident a) (Ident b)))\n"
+        ")\n"
+    );
+
+    expect_ast("event block: multiple command with tabs",
+        "on test:\n\tx 1\n\ty 2\n\tz a+b\n",
+        "(Event test:\n"
+        "\t(Command (Ident x) (Literal 1))\n"
+        "\t(Command (Ident y) (Literal 2))\n"
+        "\t(Command (Ident z) (Binary + (Ident a) (Ident b)))\n"
+        ")\n"
+    );
+
+    expect_ast("event block: event with arguments",
+        "on attack attacker target:\n    damage target 5\n",
+        "(Event attack attacker target:\n"
+        "\t(Command (Ident damage) (Ident target) (Literal 5))\n"
+        ")\n"
+    );
+
+    expect_ast("event block: mixed expressions inside commands",
+        "on update:\n    move player (x+1)\n    spawn goblin 1..3\n",
+        "(Event update:\n"
+        "\t(Command (Ident move) (Ident player) (Group (Binary + (Ident x) (Literal 1))))\n"
+        "\t(Command (Ident spawn) (Ident goblin) (Range (Literal 1) (Literal 3)))\n"
+        ")\n"
+    );
+
+    std::cout << "Event Block (success) tests completed." << std::endl;
+}
+
+void event_block_failure() {
+    std::cout << "Running event block (failure) tests..." << std::endl;
+
+    expect_parse_error("event block: no statements (empty event)",
+        "on test:\n ");
+
+    expect_parse_error("event block: missing colon",
+        "on test\n    x 1\n");
+
+    expect_parse_error("event block: missing indentation",
+        "on test:\nx 1\n");
+
+    expect_parse_error("event block: dedent mismatch",
+        "on test:\n    x 1\ny 2\n");
+
+    expect_parse_error("event block: mismatch indentation",
+        "on test:\n    x 1\n\ty 2\n");
+
+    expect_parse_error("event block: empty header",
+        "on:\nx 1\n");
+
+    expect_parse_error("event block: unexpected tokens",
+        "on test:\n    @\n");
+
+    expect_parse_error("event block: missing newline after colon",
+        "on test:    x 1\n");
+
+    std::cout << "Event Block (failure) tests completed." << std::endl;
+}
+
+void full_script_success() {
+    std::cout << "Running full script (success) tests..." << std::endl;
+
+    expect_ast("full script: multiple events",
+        "on start:\n    x 1\n\non end:\n    y 2\n",
+        "(Event start:\n"
+        "\t(Command (Ident x) (Literal 1))\n"
+        ")\n"
+        "(Event end:\n"
+        "\t(Command (Ident y) (Literal 2))\n"
+        ")\n"
+    );
+
+    std::cout << "Full Script (success) tests completed." << std::endl;
+}
+
 void run_parser_tests() {
     std::cout << "Running parser tests..." << std::endl;
 
@@ -861,6 +1023,11 @@ void run_parser_tests() {
     test_binary_failure();
     full_expression_success();
     full_expression_failure();
+    command_success();
+    command_failure();
+    event_block_success();
+    event_block_failure();
+    full_script_success();
 
     parser_tests_failed = failed_tests_parser.size();
 

@@ -37,7 +37,6 @@ void test(
 		Scanner scanner = Scanner(source);
 		std::vector<Token> tokens = scanner.scan_tokens();
 
-		token_list.insert(token_list.begin(), { TokenType::INDENT, "" });
 		token_list.push_back({ TokenType::END_OF_FILE, "\0" });
 
 		if (tokens.size() != token_list.size()) {
@@ -90,7 +89,7 @@ void test_tokens() {
 		{TokenType::STRING, "\"hello world\""}
 		});
 
-	std::cout << "Token testing passed." << std::endl;
+	std::cout << "Token testing completed." << std::endl;
 }
 
 void test_keywords() {
@@ -120,7 +119,7 @@ void test_keywords() {
 		{TokenType::FALSE, "false"}
 		});
 
-	std::cout << "Keyword testing passed." << std::endl;
+	std::cout << "Keyword testing completed." << std::endl;
 }
 
 void test_operators() {
@@ -162,7 +161,7 @@ void test_operators() {
 		{TokenType::PAREN_CLOSE, ")"}
 		});
 
-	std::cout << "Operators testing passed." << std::endl;
+	std::cout << "Operators testing completed." << std::endl;
 }
 
 void test_comparison_operators() {
@@ -192,7 +191,7 @@ void test_comparison_operators() {
 		{TokenType::GREATER_EQUAL, ">="}
 		});
 
-	std::cout << "Comparison Operators testing passed." << std::endl;
+	std::cout << "Comparison Operators testing completed." << std::endl;
 }
 
 void test_misc() {
@@ -223,15 +222,17 @@ void test_misc() {
 		});
 
 	test("Indent (space)", "    x", {
+	{TokenType::INDENT, ""},
 	{TokenType::IDENTIFIER, "x"}
 		});
 
 	test("Indent (tab)", "\tx", {
+	{TokenType::INDENT, ""},
 	{TokenType::IDENTIFIER, "x"}
 		});
 
 
-	std::cout << "Misc testing passed." << std::endl;
+	std::cout << "Misc testing completed." << std::endl;
 }
 
 void test_sequences() {
@@ -339,6 +340,7 @@ void test_sequences() {
 		});
 
 	test("Sequence: mixed whitespace", "  x\t+\t  5", {
+	{TokenType::INDENT, ""},
 	{TokenType::IDENTIFIER, "x"},
 	{TokenType::PLUS, "+"},
 	{TokenType::NUMBER, "5"}

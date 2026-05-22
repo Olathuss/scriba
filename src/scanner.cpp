@@ -259,6 +259,10 @@ namespace scriba {
             break;
         }
 
+        if (indent.indent_width == 0) {
+            return;
+        }
+
         add_indent_token(indent);
     }
 

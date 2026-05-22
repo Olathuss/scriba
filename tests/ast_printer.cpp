@@ -121,10 +121,10 @@ string print(const EventBlock& block)
         out += " " + argument.lexeme;
     }
 
-    out += ":\n";
+    out += ":";
 
     for (auto& block_statement : block.statements) {
-        out += "\t" + print(block_statement);
+        out += "\n\t" + print(block_statement);
     }
 
     out += "\n)";
