@@ -1,15 +1,15 @@
 #include "ast_printer.h"
 
-string print(const unique_ptr<Expression>& in_expr)
+string print(const unique_ptr<Expression>& in_expr, string prepend)
 {
     if (auto expr = dynamic_cast<const MemberExpression*>(in_expr.get())) {
-        return "(Member " +
+        return prepend + "(Member " +
             print(expr->object) + " " +
             expr->property.lexeme + ")";
     }
 
     if (auto expr = dynamic_cast<const ArrayLiteralExpression*>(in_expr.get())) {
-        string out = "(Array";
+        string out = prepend + "(Array";
         for (const auto& element : expr->elements) {
             out += " " + print(element);
         }
@@ -18,67 +18,76 @@ string print(const unique_ptr<Expression>& in_expr)
     }
 
     if (auto expr = dynamic_cast<const GroupingExpression*>(in_expr.get())) {
-        return "(Group " + print(expr->inner) + ")";
+        return prepend + "(Group " + print(expr->inner) + ")";
     }
 
     if (auto expr = dynamic_cast<const IdentifierExpression*>(in_expr.get())) {
-        return "(Ident " + expr->token.lexeme + ")";
+        return prepend + "(Ident " + expr->token.lexeme + ")";
     }
 
     if (auto expr = dynamic_cast<const LiteralExpression*>(in_expr.get())) {
-        return "(Literal " + expr->token.lexeme + ")";
+        return prepend + "(Literal " + expr->token.lexeme + ")";
     }
 
     if (auto expr = dynamic_cast<const UnaryExpression*>(in_expr.get())) {
-        return "(Unary " + expr->token.lexeme + " " +
+        return prepend + "(Unary " + expr->token.lexeme + " " +
             print(expr->operand) + ")";
     }
 
     if (auto expr = dynamic_cast<const BinaryExpression*>(in_expr.get())) {
-        return "(Binary " + expr->token.lexeme + " " +
+        return prepend + "(Binary " + expr->token.lexeme + " " +
             print(expr->left) + " " +
             print(expr->right) + ")";
     }
 
     if (auto expr = dynamic_cast<const AndExpression*>(in_expr.get())) {
-        return "(And " +
+        return prepend + "(And " +
             print(expr->left) + " " +
             print(expr->right) + ")";
     }
 
     if (auto expr = dynamic_cast<const OrExpression*>(in_expr.get())) {
-        return "(Or " +
+        return prepend + "(Or " +
             print(expr->left) + " " +
             print(expr->right) + ")";
     }
 
     if (auto expr = dynamic_cast<const RangeExpression*>(in_expr.get())) {
-        return "(Range " +
+        return prepend + "(Range " +
             print(expr->left) + " " +
             print(expr->right) + ")";
     }
 
-    return "(UnknownExpression)";
+    return prepend + "(UnknownExpression)";
 }
 
-string print(const unique_ptr<Statement>& in_stmnt)
+string print(const unique_ptr<Statement>& in_stmnt, string prepend)
 {
     if (auto statement = dynamic_cast<const IfStatement*>(in_stmnt.get())) {
-        string out = "(If\n";
-        out += "\t(Condition " + print(statement->condition) + ")\n";
-        out += "\t(Then " + print(statement->then_branch) + ")\n";
+        string out = prepend + "(If\n";
+        out += prepend + "\t(Condition " + print(statement->condition) + ")\n";
 
+        // THEN
+        out += prepend + "\t(Then\n";
+        out += print(statement->then_branch, prepend + "\t\t") + "\n";
+        out += prepend + "\t)\n";   // FIXED
+
+        // ELSE
         if (statement->else_branch) {
-            out += "\t(Else " + print(statement->else_branch) + ")\n";
+            out += prepend + "\t(Else\n";
+            out += print(statement->else_branch, prepend + "\t\t") + "\n";
+            out += prepend + "\t)\n";   // FIXED
         } else {
-            out += "\t(Else (NoElse))\n";
+            out += prepend + "\t(Else (NoElse))\n";
         }
-        out += ")";
+
+        out += prepend + ")";
         return out;
     }
 
+
     if (auto statement = dynamic_cast<const CommandStatement*>(in_stmnt.get())) {
-        string out = "(Command " + print(statement->left);
+        string out = prepend + "(Command " + print(statement->left);
         for (auto& argument : statement->arguments) {
             out += " " + print(argument);
         }
@@ -87,13 +96,13 @@ string print(const unique_ptr<Statement>& in_stmnt)
     }
 
     if (auto statement = dynamic_cast<const AssignmentStatement*>(in_stmnt.get())) {
-        return "(Assignment " +
+        return prepend + "(Assignment " +
             print(statement->left) + " " +
             print(statement->right) + ")";
     }
     
     if (auto statement = dynamic_cast<const TriggerStatement*>(in_stmnt.get())) {
-        string out = "(Trigger " + print(statement->left);
+        string out = prepend + "(Trigger " + print(statement->left);
         for (auto& argument : statement->arguments) {
             out += " " + print(argument);
         }
@@ -102,18 +111,18 @@ string print(const unique_ptr<Statement>& in_stmnt)
     }
 
     if (auto statement = dynamic_cast<const BlockStatement*>(in_stmnt.get())) {
-        string out = "(Block\n";
+        string out = prepend + "(Block\n";
         for (auto& block_statement : statement->statements) {
-            out += "\t" + print(block_statement) + "\n";
+            out += print(block_statement, prepend + "\t") + "\n";
         }
-        out += ")";
+        out += prepend + ")";
         return out;
     }
 
     return "(UnknownStatement)";
 }
 
-string print(const EventBlock& block)
+string print(const EventBlock& block, string prepend)
 {
     string out = "(Event " + block.event_token.lexeme;
 
@@ -124,7 +133,7 @@ string print(const EventBlock& block)
     out += ":";
 
     for (auto& block_statement : block.statements) {
-        out += "\n\t" + print(block_statement);
+        out += "\n" + print(block_statement, "\t");
     }
 
     out += "\n)";

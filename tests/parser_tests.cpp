@@ -1009,7 +1009,66 @@ void full_script_success() {
         ")\n"
     );
 
-    std::cout << "Full Script (success) tests completed." << std::endl;
+    expect_ast("full script: blank lines between events",
+        "on start:\n    x 1\n\n\non update:\n    y 2\n",
+        "(Event start:\n"
+        "\t(Command (Ident x) (Literal 1))\n"
+        ")\n"
+        "(Event update:\n"
+        "\t(Command (Ident y) (Literal 2))\n"
+        ")\n"
+    );
+
+    expect_ast("full script: event with arguments",
+        "on attack attacker target:\n    damage target 5\n",
+        "(Event attack attacker target:\n"
+        "\t(Command (Ident damage) (Ident target) (Literal 5))\n"
+        ")\n"
+    );
+
+    expect_ast("full script: expressions inside commands",
+        "on update:\n    move player (x+1)\n    spawn goblin 1..3\n",
+        "(Event update:\n"
+        "\t(Command (Ident move) (Ident player) (Group (Binary + (Ident x) (Literal 1))))\n"
+        "\t(Command (Ident spawn) (Ident goblin) (Range (Literal 1) (Literal 3)))\n"
+        ")\n"
+    );
+
+    expect_ast(
+        "full script: condition with else",
+        "on test arg1 arg2:\n"
+        "    if arg1 == 5:\n"
+        "        say \"It is a match!\"\n"
+        "    else:\n"
+        "        say \"It is not a match...\"\n",
+        "(Event test arg1 arg2:\n"
+        "\t(If\n"
+        "\t\t(Condition (Binary == (Ident arg1) (Literal 5)))\n"
+        "\t\t(Then\n"
+        "\t\t\t(Block\n"
+        "\t\t\t\t(Command (Ident say) (Literal \"It is a match!\"))\n"
+        "\t\t\t)\n"
+        "\t\t)\n"
+        "\t\t(Else\n"
+        "\t\t\t(Block\n"
+        "\t\t\t\t(Command (Ident say) (Literal \"It is not a match...\"))\n"
+        "\t\t\t)\n"
+        "\t\t)\n"
+        "\t)\n"
+        ")\n"
+    );
+
+
+    std::cout << "Running full script (success) tests..." << std::endl;
+}
+
+void full_script_failure() {
+    std::cout << "Running full script (failure) tests..." << std::endl;
+
+    expect_parse_error("full script: only whitespace",
+        "   \n\n\t\n");
+
+    std::cout << "Running full script (failure) tests..." << std::endl;
 }
 
 void run_parser_tests() {
@@ -1028,6 +1087,7 @@ void run_parser_tests() {
     event_block_success();
     event_block_failure();
     full_script_success();
+    full_script_failure();
 
     parser_tests_failed = failed_tests_parser.size();
 

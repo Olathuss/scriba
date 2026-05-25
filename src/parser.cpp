@@ -100,7 +100,9 @@ namespace scriba {
         auto then_branch = parse_block();
 
         std::unique_ptr<Statement> else_branch = nullptr;
-        if (match(TokenType::ELSE)) {
+        if (peek().get_type() == TokenType::INDENT
+            && peek_next().get_type() == TokenType::ELSE) {
+            advance(); advance(); // consume INDENT and ELSE
             if (match(TokenType::IF)) {
                 else_branch = parse_if_statement();
             } else {
