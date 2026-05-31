@@ -1,6 +1,6 @@
 #include "ast_printer.h"
 
-string print(const unique_ptr<Expression>& in_expr, string prepend)
+string print(const shared_ptr<Expression>& in_expr, string prepend)
 {
     if (auto expr = dynamic_cast<const MemberExpression*>(in_expr.get())) {
         return prepend + "(Member " +
@@ -61,22 +61,20 @@ string print(const unique_ptr<Expression>& in_expr, string prepend)
     return prepend + "(UnknownExpression)";
 }
 
-string print(const unique_ptr<Statement>& in_stmnt, string prepend)
+string print(const shared_ptr<Statement>& in_stmnt, string prepend)
 {
     if (auto statement = dynamic_cast<const IfStatement*>(in_stmnt.get())) {
         string out = prepend + "(If\n";
         out += prepend + "\t(Condition " + print(statement->condition) + ")\n";
 
-        // THEN
         out += prepend + "\t(Then\n";
         out += print(statement->then_branch, prepend + "\t\t") + "\n";
-        out += prepend + "\t)\n";   // FIXED
+        out += prepend + "\t)\n";
 
-        // ELSE
         if (statement->else_branch) {
             out += prepend + "\t(Else\n";
             out += print(statement->else_branch, prepend + "\t\t") + "\n";
-            out += prepend + "\t)\n";   // FIXED
+            out += prepend + "\t)\n";
         } else {
             out += prepend + "\t(Else (NoElse))\n";
         }

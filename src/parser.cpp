@@ -56,17 +56,17 @@ namespace scriba {
         return event_block;
     }
 
-    std::unique_ptr<Statement> Parser::parse_block()
+    std::shared_ptr<Statement> Parser::parse_block()
     {
         consume(TokenType::NEWLINE, "Expected newline after ':' and before block.");
         IndentLevel block_indent = start_block();
         auto statements = parse_block_body(block_indent);
-        return std::make_unique<BlockStatement>(std::move(statements));
+        return std::make_shared<BlockStatement>(std::move(statements));
     }
 
-    std::vector<std::unique_ptr<Statement>> Parser::parse_block_body(const IndentLevel& block_indent)
+    std::vector<std::shared_ptr<Statement>> Parser::parse_block_body(const IndentLevel& block_indent)
     {
-        std::vector<std::unique_ptr<Statement>> statements;
+        std::vector<std::shared_ptr<Statement>> statements;
         statements.push_back(parse_statement());
 
         while (still_in_block(block_indent)) {
@@ -76,7 +76,7 @@ namespace scriba {
         return statements;
     }
 
-    std::unique_ptr<Statement> Parser::parse_statement()
+    std::shared_ptr<Statement> Parser::parse_statement()
     {
         if (match(TokenType::IF)) {
             return parse_if_statement();
@@ -93,13 +93,13 @@ namespace scriba {
         throw ParseError("This doesn't start a valid statement.", peek());
     }
 
-    std::unique_ptr<Statement> Parser::parse_if_statement()
+    std::shared_ptr<Statement> Parser::parse_if_statement()
     {
         auto condition = parse_expression();
         consume(TokenType::COLON, "Expected ':' after if condition.");
         auto then_branch = parse_block();
 
-        std::unique_ptr<Statement> else_branch = nullptr;
+        std::shared_ptr<Statement> else_branch = nullptr;
         if (peek().get_type() == TokenType::INDENT
             && peek_next().get_type() == TokenType::ELSE) {
             advance(); advance(); // consume INDENT and ELSE
@@ -111,22 +111,22 @@ namespace scriba {
             }            
         }
 
-        return std::make_unique<IfStatement>(
+        return std::make_shared<IfStatement>(
             std::move(condition),
             std::move(then_branch),
             std::move(else_branch)
         );
     }
 
-    std::unique_ptr<Statement> Parser::parse_trigger_statement()
+    std::shared_ptr<Statement> Parser::parse_trigger_statement()
     {
-        std::unique_ptr<Expression> left_expression = std::make_unique<IdentifierExpression>(previous());
+        std::shared_ptr<Expression> left_expression = std::make_shared<IdentifierExpression>(previous());
 
         if (match(TokenType::DOT)) {
             left_expression = parse_member_chain(std::move(left_expression));
         }
 
-        std::vector<std::unique_ptr<Expression>> arguments;
+        std::vector<std::shared_ptr<Expression>> arguments;
 
         while (token_can_start_expression(peek().get_type())) {
             arguments.push_back(parse_expression());
@@ -134,15 +134,15 @@ namespace scriba {
 
         consume(TokenType::NEWLINE, "Expected end of trigger command.");
 
-        return std::make_unique<TriggerStatement>(
+        return std::make_shared<TriggerStatement>(
             std::move(left_expression),
             std::move(arguments)
         );
     }
 
-    std::unique_ptr<Statement> Parser::parse_identifier_statement()
+    std::shared_ptr<Statement> Parser::parse_identifier_statement()
     {
-        std::unique_ptr<Expression> left_expression = std::make_unique<IdentifierExpression>(previous());
+        std::shared_ptr<Expression> left_expression = std::make_shared<IdentifierExpression>(previous());
 
         if (match(TokenType::DOT)) {
             left_expression = parse_member_chain(std::move(left_expression));
@@ -151,15 +151,15 @@ namespace scriba {
         if (match(TokenType::ASSIGN)) {
             auto right_expression = parse_expression();
             consume(TokenType::NEWLINE, "Expected end of assignment.");
-            return std::make_unique<AssignmentStatement>(std::move(left_expression), std::move(right_expression));
+            return std::make_shared<AssignmentStatement>(std::move(left_expression), std::move(right_expression));
         }
 
         return parse_command_statement(std::move(left_expression));
     }
 
-    std::unique_ptr<Statement> Parser::parse_command_statement(std::unique_ptr<Expression> left_expression)
+    std::shared_ptr<Statement> Parser::parse_command_statement(std::shared_ptr<Expression> left_expression)
     {
-        std::vector<std::unique_ptr<Expression>> arguments;
+        std::vector<std::shared_ptr<Expression>> arguments;
 
         while (token_can_start_expression(peek().get_type())) {
             arguments.push_back(parse_expression());
@@ -167,55 +167,55 @@ namespace scriba {
 
         consume(TokenType::NEWLINE, "Expected end of command.");
 
-        return std::make_unique<CommandStatement>(
+        return std::make_shared<CommandStatement>(
             std::move(left_expression),
             std::move(arguments)
         );
     }
 
-    std::unique_ptr<Expression> Parser::parse_expression()
+    std::shared_ptr<Expression> Parser::parse_expression()
     {
         return parse_logical_or();
     }
 
-    std::unique_ptr<Expression> Parser::parse_logical_or()
+    std::shared_ptr<Expression> Parser::parse_logical_or()
     {
         auto expression = parse_logical_and();
 
         while (match(TokenType::OR)) {
             auto right = parse_logical_and();
-            expression = std::make_unique<OrExpression>(std::move(expression), std::move(right));
+            expression = std::make_shared<OrExpression>(std::move(expression), std::move(right));
         }
 
         return expression;
     }
 
-    std::unique_ptr<Expression> Parser::parse_logical_and()
+    std::shared_ptr<Expression> Parser::parse_logical_and()
     {
         auto expression = parse_equality();
 
         while (match(TokenType::AND)) {
-            std::unique_ptr<Expression> right = parse_equality();
-            expression = std::make_unique<AndExpression>(std::move(expression), std::move(right));
+            std::shared_ptr<Expression> right = parse_equality();
+            expression = std::make_shared<AndExpression>(std::move(expression), std::move(right));
         }
 
         return expression;
     }
 
-    std::unique_ptr<Expression> Parser::parse_equality()
+    std::shared_ptr<Expression> Parser::parse_equality()
     {
         auto expression = parse_comparison();
 
         while (match(TokenType::EQUAL) || match(TokenType::NOT_EQUAL)) {
             Token op = previous();
             auto right = parse_comparison();
-            expression = std::make_unique<BinaryExpression>(op, std::move(expression), std::move(right));
+            expression = std::make_shared<BinaryExpression>(op, std::move(expression), std::move(right));
         }
 
         return expression;
     }
 
-    std::unique_ptr<Expression> Parser::parse_comparison()
+    std::shared_ptr<Expression> Parser::parse_comparison()
     {
         auto expression = parse_range();
 
@@ -223,13 +223,13 @@ namespace scriba {
             match(TokenType::LESS_EQUAL) || match(TokenType::LESS_THAN)) {
             Token op = previous();
             auto right = parse_range();
-            expression = std::make_unique<BinaryExpression>(op, std::move(expression), std::move(right));
+            expression = std::make_shared<BinaryExpression>(op, std::move(expression), std::move(right));
         }
 
         return expression;
     }
 
-    std::unique_ptr<Expression> Parser::parse_range()
+    std::shared_ptr<Expression> Parser::parse_range()
     {
         auto expression = parse_term();
 
@@ -238,49 +238,49 @@ namespace scriba {
                 throw ParseError("Expected '..' for range operator", peek());
             }
             auto right = parse_term();
-            expression = std::make_unique<RangeExpression>(std::move(expression), std::move(right));
+            expression = std::make_shared<RangeExpression>(std::move(expression), std::move(right));
         }
 
         return expression;
     }
 
-    std::unique_ptr<Expression> Parser::parse_term()
+    std::shared_ptr<Expression> Parser::parse_term()
     {
         auto expression = parse_factor();
 
         while (match(TokenType::PLUS) || match(TokenType::MINUS)) {
             Token op = previous();
             auto right = parse_factor();
-            expression = std::make_unique<BinaryExpression>(op, std::move(expression), std::move(right));
+            expression = std::make_shared<BinaryExpression>(op, std::move(expression), std::move(right));
         }
 
         return expression;
     }
 
-    std::unique_ptr<Expression> Parser::parse_factor()
+    std::shared_ptr<Expression> Parser::parse_factor()
     {
         auto expression = parse_unary();
 
         while (match(TokenType::SLASH) || match(TokenType::STAR)) {
             Token op = previous();
             auto right = parse_unary();
-            expression = std::make_unique<BinaryExpression>(op, std::move(expression), std::move(right));
+            expression = std::make_shared<BinaryExpression>(op, std::move(expression), std::move(right));
         }
 
         return expression;
     }
 
-    std::unique_ptr<Expression> Parser::parse_unary()
+    std::shared_ptr<Expression> Parser::parse_unary()
     {
         if (match(TokenType::NOT) || match(TokenType::MINUS)) {
             Token token = previous();
             auto right = parse_unary();
-            return std::make_unique<UnaryExpression>(token, std::move(right));
+            return std::make_shared<UnaryExpression>(token, std::move(right));
         }
         return parse_postfix();
     }
     
-    std::unique_ptr<Expression> Parser::parse_postfix()
+    std::shared_ptr<Expression> Parser::parse_postfix()
     {
         auto expression = parse_primary();
 
@@ -292,15 +292,15 @@ namespace scriba {
         return expression;
     }
 
-    std::unique_ptr<Expression> Parser::parse_primary()
+    std::shared_ptr<Expression> Parser::parse_primary()
     {
-        if (match(TokenType::FALSE)) return std::make_unique<LiteralExpression>(previous());
-        if (match(TokenType::TRUE)) return std::make_unique<LiteralExpression>(previous());
+        if (match(TokenType::FALSE)) return std::make_shared<LiteralExpression>(previous());
+        if (match(TokenType::TRUE)) return std::make_shared<LiteralExpression>(previous());
 
-        if (match(TokenType::NUMBER)) return std::make_unique<LiteralExpression>(previous());
-        if (match(TokenType::STRING)) return std::make_unique<LiteralExpression>(previous());
+        if (match(TokenType::NUMBER)) return std::make_shared<LiteralExpression>(previous());
+        if (match(TokenType::STRING)) return std::make_shared<LiteralExpression>(previous());
 
-        if (match(TokenType::IDENTIFIER)) return std::make_unique<IdentifierExpression>(previous());
+        if (match(TokenType::IDENTIFIER)) return std::make_shared<IdentifierExpression>(previous());
 
         if (match(TokenType::BRACKET_OPEN)) {
             return parse_array_literal();
@@ -309,7 +309,7 @@ namespace scriba {
         if (match(TokenType::PAREN_OPEN)) {
             Token open = previous();
             auto expression = parse_expression();
-            expression = std::make_unique<GroupingExpression>(open, std::move(expression));
+            expression = std::make_shared<GroupingExpression>(open, std::move(expression));
             consume(TokenType::PAREN_CLOSE, "Expected ')' at end of expression.");
             return expression;
         }
@@ -317,10 +317,10 @@ namespace scriba {
         throw ParseError("Expected expression.", peek());
     }
 
-    std::unique_ptr<ArrayLiteralExpression> Parser::parse_array_literal()
+    std::shared_ptr<ArrayLiteralExpression> Parser::parse_array_literal()
     {
         Token array_start = previous();
-        auto array = std::make_unique<ArrayLiteralExpression>(array_start);
+        auto array = std::make_shared<ArrayLiteralExpression>(array_start);
 
         if (check(TokenType::BRACKET_CLOSE)) {
             advance();
@@ -344,14 +344,14 @@ namespace scriba {
         return array;
     }
 
-    std::unique_ptr<Expression> Parser::parse_member_chain(std::unique_ptr<Expression> object)
+    std::shared_ptr<Expression> Parser::parse_member_chain(std::shared_ptr<Expression> object)
     {
         Token property = consume(TokenType::IDENTIFIER, "Expected identifier after '.'");
-        object = std::make_unique<MemberExpression>(std::move(object), property);
+        object = std::make_shared<MemberExpression>(std::move(object), property);
 
         while (match(TokenType::DOT)) {
             Token next_property = consume(TokenType::IDENTIFIER, "Expected identifier after '.'");
-            object = std::make_unique<MemberExpression>(std::move(object), next_property);
+            object = std::make_shared<MemberExpression>(std::move(object), next_property);
         }
         return object;
     }

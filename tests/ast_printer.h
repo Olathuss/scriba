@@ -23,6 +23,6 @@
 using namespace std;
 using namespace scriba;
 
-string print(const unique_ptr<Expression>& in_expr, string prepend = "");
-string print(const unique_ptr<Statement>& in_stmnt, string prepend = "");
+string print(const shared_ptr<Expression>& in_expr, string prepend = "");
+string print(const shared_ptr<Statement>& in_stmnt, string prepend = "");
 string print(const EventBlock& in_block, string prepend = "");

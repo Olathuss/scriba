@@ -10,6 +10,6 @@ namespace scriba {
 	struct EventBlock {
 		Token event_token;
 		std::vector<Token> arguments;
-		std::vector<std::unique_ptr<Statement>> statements;
+		std::vector<std::shared_ptr<Statement>> statements;
 	};
 } // namespace scriba

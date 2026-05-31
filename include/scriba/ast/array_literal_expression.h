@@ -6,7 +6,7 @@
 
 namespace scriba {
 	struct ArrayLiteralExpression : Expression {
-		std::vector<std::unique_ptr<Expression>> elements;
+		std::vector<std::shared_ptr<Expression>> elements;
 
 		ArrayLiteralExpression() {};
 

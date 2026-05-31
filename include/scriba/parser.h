@@ -50,45 +50,45 @@ namespace scriba {
 
         EventBlock parse_event_block();
 
-        std::unique_ptr<Statement> parse_block();
+        std::shared_ptr<Statement> parse_block();
 
-        std::vector<std::unique_ptr<Statement>> parse_block_body(const IndentLevel& block_indent);
+        std::vector<std::shared_ptr<Statement>> parse_block_body(const IndentLevel& block_indent);
 
-        std::unique_ptr<Statement> parse_statement();
+        std::shared_ptr<Statement> parse_statement();
 
-        std::unique_ptr<Statement> parse_if_statement();
+        std::shared_ptr<Statement> parse_if_statement();
 
-        std::unique_ptr<Statement> parse_trigger_statement();
+        std::shared_ptr<Statement> parse_trigger_statement();
 
-        std::unique_ptr<Statement> parse_identifier_statement();
+        std::shared_ptr<Statement> parse_identifier_statement();
 
-        std::unique_ptr<Statement> parse_command_statement(std::unique_ptr<Expression> left_expression);
+        std::shared_ptr<Statement> parse_command_statement(std::shared_ptr<Expression> left_expression);
 
-        std::unique_ptr<Expression> parse_expression();
+        std::shared_ptr<Expression> parse_expression();
 
-        std::unique_ptr<Expression> parse_logical_or();
+        std::shared_ptr<Expression> parse_logical_or();
 
-        std::unique_ptr<Expression> parse_logical_and();
+        std::shared_ptr<Expression> parse_logical_and();
 
-        std::unique_ptr<Expression> parse_equality();
+        std::shared_ptr<Expression> parse_equality();
 
-        std::unique_ptr<Expression> parse_comparison();
+        std::shared_ptr<Expression> parse_comparison();
 
-        std::unique_ptr<Expression> parse_range();
+        std::shared_ptr<Expression> parse_range();
 
-        std::unique_ptr<Expression> parse_term();
+        std::shared_ptr<Expression> parse_term();
 
-        std::unique_ptr<Expression> parse_factor();
+        std::shared_ptr<Expression> parse_factor();
 
-        std::unique_ptr<Expression> parse_unary();
+        std::shared_ptr<Expression> parse_unary();
 
-        std::unique_ptr<Expression> parse_postfix();
+        std::shared_ptr<Expression> parse_postfix();
 
-        std::unique_ptr<Expression> parse_primary();
+        std::shared_ptr<Expression> parse_primary();
 
-        std::unique_ptr<ArrayLiteralExpression> parse_array_literal();
+        std::shared_ptr<ArrayLiteralExpression> parse_array_literal();
 
-        std::unique_ptr<Expression> parse_member_chain(std::unique_ptr<Expression> object);
+        std::shared_ptr<Expression> parse_member_chain(std::shared_ptr<Expression> object);
 
         bool is_comparison_operator(const Token& token) const { return token.is_comparison(); }
         bool is_unary_expression(const Token& token) const { return token.is_unary(); }

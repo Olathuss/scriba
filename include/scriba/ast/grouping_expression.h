@@ -7,9 +7,9 @@
 
 namespace scriba {
     struct GroupingExpression : Expression {
-        std::unique_ptr<Expression> inner;
+        std::shared_ptr<Expression> inner;
 
-        GroupingExpression(const Token& token, std::unique_ptr<Expression> expr)
+        GroupingExpression(const Token& token, std::shared_ptr<Expression> expr)
             : Expression(token), inner(std::move(expr)) {
         }
     };

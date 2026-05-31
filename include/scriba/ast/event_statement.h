@@ -9,7 +9,7 @@ namespace scriba {
 	struct EventStatement : Statement {
 		std::string name;
 		std::vector<std::string> arguments;
-		std::vector<std::unique_ptr<Statement>> body;
+		std::vector<std::shared_ptr<Statement>> body;
 
 		EventStatement() {}
 	};
