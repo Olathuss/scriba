@@ -1034,6 +1034,23 @@ void full_script_success() {
         ")\n"
     );
 
+    expect_ast("full script: if with no else",
+        "on test:\n"
+        "    if x:\n"
+        "        say \"hi\"\n",
+        "(Event test:\n"
+        "\t(If\n"
+        "\t\t(Condition (Ident x))\n"
+        "\t\t(Then\n"
+        "\t\t\t(Block\n"
+        "\t\t\t\t(Command (Ident say) (Literal \"hi\"))\n"
+        "\t\t\t)\n"
+        "\t\t)\n"
+        "\t\t(Else (NoElse))\n"
+        "\t)\n"
+        ")\n"
+    );
+
     expect_ast(
         "full script: condition with else",
         "on test arg1 arg2:\n"
@@ -1058,15 +1075,512 @@ void full_script_success() {
         ")\n"
     );
 
+    expect_ast("full script: if with else if",
+        "on test x:\n"
+        "    if x == 1:\n"
+        "        say \"one\"\n"
+        "    else if x == 2:\n"
+        "        say \"two\"\n"
+        "    else:\n"
+        "        say \"other\"\n",
+        "(Event test x:\n"
+        "\t(If\n"
+        "\t\t(Condition (Binary == (Ident x) (Literal 1)))\n"
+        "\t\t(Then\n"
+        "\t\t\t(Block\n"
+        "\t\t\t\t(Command (Ident say) (Literal \"one\"))\n"
+        "\t\t\t)\n"
+        "\t\t)\n"
+        "\t\t(Else\n"
+        "\t\t\t(If\n"
+        "\t\t\t\t(Condition (Binary == (Ident x) (Literal 2)))\n"
+        "\t\t\t\t(Then\n"
+        "\t\t\t\t\t(Block\n"
+        "\t\t\t\t\t\t(Command (Ident say) (Literal \"two\"))\n"
+        "\t\t\t\t\t)\n"
+        "\t\t\t\t)\n"
+        "\t\t\t\t(Else\n"
+        "\t\t\t\t\t(Block\n"
+        "\t\t\t\t\t\t(Command (Ident say) (Literal \"other\"))\n"
+        "\t\t\t\t\t)\n"
+        "\t\t\t\t)\n"
+        "\t\t\t)\n"
+        "\t\t)\n"
+        "\t)\n"
+        ")\n"
+    );
+
+    expect_ast(
+        "full script: nested if",
+        "on test x y:\n"
+        "    if x:\n"
+        "        if y:\n"
+        "            say \"nested\"\n",
+        "(Event test x y:\n"
+        "\t(If\n"
+        "\t\t(Condition (Ident x))\n"
+        "\t\t(Then\n"
+        "\t\t\t(Block\n"
+        "\t\t\t\t(If\n"
+        "\t\t\t\t\t(Condition (Ident y))\n"
+        "\t\t\t\t\t(Then\n"
+        "\t\t\t\t\t\t(Block\n"
+        "\t\t\t\t\t\t\t(Command (Ident say) (Literal \"nested\"))\n"
+        "\t\t\t\t\t\t)\n"
+        "\t\t\t\t\t)\n"
+        "\t\t\t\t\t(Else (NoElse))\n"
+        "\t\t\t\t)\n"
+        "\t\t\t)\n"
+        "\t\t)\n"
+        "\t\t(Else (NoElse))\n"
+        "\t)\n"
+        ")\n"
+    );
+
+    expect_ast(
+        "full script: nested if in else",
+        "on test x y:\n"
+        "\tif x:\n"
+        "\t\tsay \"outer\"\n"
+        "\telse:\n"
+        "\t\tif y:\n"
+        "\t\t\tsay \"inner\"\n",
+        "(Event test x y:\n"
+        "\t(If\n"
+        "\t\t(Condition (Ident x))\n"
+        "\t\t(Then\n"
+        "\t\t\t(Block\n"
+        "\t\t\t\t(Command (Ident say) (Literal \"outer\"))\n"
+        "\t\t\t)\n"
+        "\t\t)\n"
+        "\t\t(Else\n"
+        "\t\t\t(Block\n"
+        "\t\t\t\t(If\n"
+        "\t\t\t\t\t(Condition (Ident y))\n"
+        "\t\t\t\t\t(Then\n"
+        "\t\t\t\t\t\t(Block\n"
+        "\t\t\t\t\t\t\t(Command (Ident say) (Literal \"inner\"))\n"
+        "\t\t\t\t\t\t)\n"
+        "\t\t\t\t\t)\n"
+        "\t\t\t\t\t(Else (NoElse))\n"
+        "\t\t\t\t)\n"
+        "\t\t\t)\n"
+        "\t\t)\n"
+        "\t)\n"
+        ")\n"
+    );
+
+    expect_ast(
+        "full script: condition with else and blank lines",
+        "on test x y:\n"
+        "    if x:\n"
+        ""
+        "        say \"hi\"\n"
+        ""
+        "    else:\n"
+        ""
+        "        say \"bye\"\n",
+        "(Event test x y:\n"
+        "\t(If\n"
+        "\t\t(Condition (Ident x))\n"
+        "\t\t(Then\n"
+        "\t\t\t(Block\n"
+        "\t\t\t\t(Command (Ident say) (Literal \"hi\"))\n"
+        "\t\t\t)\n"
+        "\t\t)\n"
+        "\t\t(Else\n"
+        "\t\t\t(Block\n"
+        "\t\t\t\t(Command (Ident say) (Literal \"bye\"))\n"
+        "\t\t\t)\n"
+        "\t\t)\n"
+        "\t)\n"
+        ")\n"
+    );
+
+    expect_ast(
+        "full script: logical and",
+        "on test x y:\n"
+        "\tif x == 1 and y == 2:\n"
+        "\t\tsay \"both are true\"\n",
+        "(Event test x y:\n"
+        "\t(If\n"
+        "\t\t(Condition (And (Binary == (Ident x) (Literal 1)) (Binary == (Ident y) (Literal 2))))\n"
+        "\t\t(Then\n"
+        "\t\t\t(Block\n"
+        "\t\t\t\t(Command (Ident say) (Literal \"both are true\"))\n"
+        "\t\t\t)\n"
+        "\t\t)\n"
+        "\t\t(Else (NoElse))\n"
+        "\t)\n"
+        ")\n"
+    );
+
+    expect_ast(
+        "full script: logical or",
+        "on test x y:\n"
+        "\tif x == 1 or y <= 2:\n"
+        "\t\tsay \"both are true\"\n",
+        "(Event test x y:\n"
+        "\t(If\n"
+        "\t\t(Condition (Or (Binary == (Ident x) (Literal 1)) (Binary <= (Ident y) (Literal 2))))\n"
+        "\t\t(Then\n"
+        "\t\t\t(Block\n"
+        "\t\t\t\t(Command (Ident say) (Literal \"both are true\"))\n"
+        "\t\t\t)\n"
+        "\t\t)\n"
+        "\t\t(Else (NoElse))\n"
+        "\t)\n"
+        ")\n"
+    );
+
+    expect_ast(
+        "full script: logical and/or grouping",
+        "on test x y z:\n"
+        "\tif (x == 1 or y == 2) and z == 3:\n"
+        "\t\tsay \"complex\"\n",
+        "(Event test x y z:\n"
+        "\t(If\n"
+        "\t\t(Condition (And (Group (Or (Binary == (Ident x) (Literal 1)) (Binary == (Ident y) (Literal 2)))) (Binary == (Ident z) (Literal 3))))\n"
+        "\t\t(Then\n"
+        "\t\t\t(Block\n"
+        "\t\t\t\t(Command (Ident say) (Literal \"complex\"))\n"
+        "\t\t\t)\n"
+        "\t\t)\n"
+        "\t\t(Else (NoElse))\n"
+        "\t)\n"
+        ")\n"
+    );
+
+    expect_ast(
+        "full script: logical and/or grouping",
+        "on test x y z:\n"
+        "\tif player.health < 10:\n"
+        "\t\tsay \"low health\"\n",
+        "(Event test x y z:\n"
+        "\t(If\n"
+        "\t\t(Condition (Binary < (Member (Ident player) health) (Literal 10)))\n"
+        "\t\t(Then\n"
+        "\t\t\t(Block\n"
+        "\t\t\t\t(Command (Ident say) (Literal \"low health\"))\n"
+        "\t\t\t)\n"
+        "\t\t)\n"
+        "\t\t(Else (NoElse))\n"
+        "\t)\n"
+        ")\n"
+    );
 
     std::cout << "Running full script (success) tests..." << std::endl;
+}
+
+void full_script_success_2() {
+    std::cout << "Running full script (success) #2 tests..." << std::endl;
+
+    expect_ast(
+        "full script: else-if with nested block",
+        "on test x y z:\n"
+        "    if x == 1:\n"
+        "        say \"one\"\n"
+        "    else if y == 2:\n"
+        "        if z == 3:\n"
+        "            say \"nested\"\n",
+        "(Event test x y z:\n"
+        "\t(If\n"
+        "\t\t(Condition (Binary == (Ident x) (Literal 1)))\n"
+        "\t\t(Then\n"
+        "\t\t\t(Block\n"
+        "\t\t\t\t(Command (Ident say) (Literal \"one\"))\n"
+        "\t\t\t)\n"
+        "\t\t)\n"
+        "\t\t(Else\n"
+        "\t\t\t(If\n"
+        "\t\t\t\t(Condition (Binary == (Ident y) (Literal 2)))\n"
+        "\t\t\t\t(Then\n"
+        "\t\t\t\t\t(Block\n"
+        "\t\t\t\t\t\t(If\n"
+        "\t\t\t\t\t\t\t(Condition (Binary == (Ident z) (Literal 3)))\n"
+        "\t\t\t\t\t\t\t(Then\n"
+        "\t\t\t\t\t\t\t\t(Block\n"
+        "\t\t\t\t\t\t\t\t\t(Command (Ident say) (Literal \"nested\"))\n"
+        "\t\t\t\t\t\t\t\t)\n"
+        "\t\t\t\t\t\t\t)\n"
+        "\t\t\t\t\t\t\t(Else (NoElse))\n"
+        "\t\t\t\t\t\t)\n"
+        "\t\t\t\t\t)\n"
+        "\t\t\t\t)\n"
+        "\t\t\t\t(Else (NoElse))\n"
+        "\t\t\t)\n"
+        "\t\t)\n"
+        "\t)\n"
+        ")\n"
+    );
+
+    expect_ast(
+        "full script: multi-statement THEN",
+        "on test x:\n"
+        "    if x:\n"
+        "        a 1\n"
+        "        b 2\n",
+        "(Event test x:\n"
+        "\t(If\n"
+        "\t\t(Condition (Ident x))\n"
+        "\t\t(Then\n"
+        "\t\t\t(Block\n"
+        "\t\t\t\t(Command (Ident a) (Literal 1))\n"
+        "\t\t\t\t(Command (Ident b) (Literal 2))\n"
+        "\t\t\t)\n"
+        "\t\t)\n"
+        "\t\t(Else (NoElse))\n"
+        "\t)\n"
+        ")\n"
+    );
+
+    expect_ast(
+        "full script: multi-statement ELSE",
+        "on test x:\n"
+        "    if x:\n"
+        "        say \"yes\"\n"
+        "    else:\n"
+        "        a 1\n"
+        "        b 2\n",
+        "(Event test x:\n"
+        "\t(If\n"
+        "\t\t(Condition (Ident x))\n"
+        "\t\t(Then\n"
+        "\t\t\t(Block\n"
+        "\t\t\t\t(Command (Ident say) (Literal \"yes\"))\n"
+        "\t\t\t)\n"
+        "\t\t)\n"
+        "\t\t(Else\n"
+        "\t\t\t(Block\n"
+        "\t\t\t\t(Command (Ident a) (Literal 1))\n"
+        "\t\t\t\t(Command (Ident b) (Literal 2))\n"
+        "\t\t\t)\n"
+        "\t\t)\n"
+        "\t)\n"
+        ")\n"
+    );
+
+    expect_ast(
+        "full script: else-if without final else",
+        "on test x:\n"
+        "    if x == 1:\n"
+        "        say \"one\"\n"
+        "    else if x == 2:\n"
+        "        say \"two\"\n",
+        "(Event test x:\n"
+        "\t(If\n"
+        "\t\t(Condition (Binary == (Ident x) (Literal 1)))\n"
+        "\t\t(Then\n"
+        "\t\t\t(Block\n"
+        "\t\t\t\t(Command (Ident say) (Literal \"one\"))\n"
+        "\t\t\t)\n"
+        "\t\t)\n"
+        "\t\t(Else\n"
+        "\t\t\t(If\n"
+        "\t\t\t\t(Condition (Binary == (Ident x) (Literal 2)))\n"
+        "\t\t\t\t(Then\n"
+        "\t\t\t\t\t(Block\n"
+        "\t\t\t\t\t\t(Command (Ident say) (Literal \"two\"))\n"
+        "\t\t\t\t\t)\n"
+        "\t\t\t\t)\n"
+        "\t\t\t\t(Else (NoElse))\n"
+        "\t\t\t)\n"
+        "\t\t)\n"
+        "\t)\n"
+        ")\n"
+    );
+
+    expect_ast(
+        "full script: deeply nested if",
+        "on test a b c:\n"
+        "    if a:\n"
+        "        if b:\n"
+        "            if c:\n"
+        "                say \"deep\"\n",
+        "(Event test a b c:\n"
+        "\t(If\n"
+        "\t\t(Condition (Ident a))\n"
+        "\t\t(Then\n"
+        "\t\t\t(Block\n"
+        "\t\t\t\t(If\n"
+        "\t\t\t\t\t(Condition (Ident b))\n"
+        "\t\t\t\t\t(Then\n"
+        "\t\t\t\t\t\t(Block\n"
+        "\t\t\t\t\t\t\t(If\n"
+        "\t\t\t\t\t\t\t\t(Condition (Ident c))\n"
+        "\t\t\t\t\t\t\t\t(Then\n"
+        "\t\t\t\t\t\t\t\t\t(Block\n"
+        "\t\t\t\t\t\t\t\t\t\t(Command (Ident say) (Literal \"deep\"))\n"
+        "\t\t\t\t\t\t\t\t\t)\n"
+        "\t\t\t\t\t\t\t\t)\n"
+        "\t\t\t\t\t\t\t\t(Else (NoElse))\n"
+        "\t\t\t\t\t\t\t)\n"
+        "\t\t\t\t\t\t)\n"
+        "\t\t\t\t\t)\n"
+        "\t\t\t\t\t(Else (NoElse))\n"
+        "\t\t\t\t)\n"
+        "\t\t\t)\n"
+        "\t\t)\n"
+        "\t\t(Else (NoElse))\n"
+        "\t)\n"
+        ")\n"
+    );
+
+    std::cout << "Running full script (success) #2 tests..." << std::endl;
 }
 
 void full_script_failure() {
     std::cout << "Running full script (failure) tests..." << std::endl;
 
+    // 1. Only whitespace
     expect_parse_error("full script: only whitespace",
         "   \n\n\t\n");
+
+    // 2. Misaligned else (else indented deeper than its if)
+    expect_parse_error("full script: misaligned else",
+        "on test x:\n"
+        "\tif x:\n"
+        "\t\tsay \"hi\"\n"
+        "\t\t\telse:\n"
+        "\t\t\t\tsay \"nope\""
+    );
+
+    // 3. Dangling else (no matching if)
+    expect_parse_error("full script: dangling else",
+        "on test:\n"
+        "\telse:\n"
+        "\t\tsay \"nope\""
+    );
+
+    // 4. Else at top level
+    expect_parse_error("full script: else at top level",
+        "else:\n"
+        "    say \"nope\""
+    );
+
+    // 5. If with no colon
+    expect_parse_error("full script: if missing colon",
+        "on test:\n"
+        "\tif x\n"
+        "\t\tsay \"hi\""
+    );
+
+    // 6. Else with no colon
+    expect_parse_error("full script: else missing colon",
+        "on test:\n"
+        "\tif x:\n"
+        "\t\tsay \"hi\"\n"
+        "\telse\n"
+        "\t\tsay \"bye\""
+    );
+
+    // 7. If with no condition
+    expect_parse_error("full script: if missing condition",
+        "on test:\n"
+        "\tif:\n"
+        "\t\tsay \"hi\""
+    );
+
+    // 8. If with invalid condition
+    expect_parse_error("full script: invalid condition",
+        "on test:\n"
+        "\tif 1 +:\n"
+        "\t\tsay \"hi\""
+    );
+
+    // 9. If with no body
+    expect_parse_error("full script: if missing body",
+        "on test:\n"
+        "\tif x:\n"
+        "\n"
+        "\telse:\n"
+        "\t\tsay \"bye\""
+    );
+
+    // 10. Else-if incorrectly indented (should be parsed as dangling else)
+    expect_parse_error("full script: else-if misaligned",
+        "on test x:\n"
+        "\tif x:\n"
+        "\t\tsay \"hi\"\n"
+        "    else if x:\n"
+        "\t\tsay \"nope\""
+    );
+
+    // 11. Event missing colon
+    expect_parse_error("full script: event missing colon",
+        "on test\n"
+        "\tsay \"hi\""
+    );
+
+    // 12. Event with invalid name
+    expect_parse_error("full script: invalid event name",
+        "on 123:\n"
+        "\tsay \"hi\""
+    );
+
+    // 13. Event with no body
+    expect_parse_error("full script: event missing body",
+        "on test:\n"
+    );
+
+    // 14. Unterminated block (indent but no statements)
+    expect_parse_error("full script: unterminated block",
+        "on test:\n"
+        "\tif x:\n"
+        "\t\t"
+    );
+
+    // 15. Mixed indentation (tabs + spaces)
+    expect_parse_error("full script: mixed indentation",
+        "on test:\n"
+        "    if x:\n"
+        "\t\tsay \"hi\""
+    );
+
+    // 16. Unexpected token inside event
+    expect_parse_error("full script: unexpected token",
+        "on test:\n"
+        "\t@#$\n"
+    );
+
+    // 17. Missing event keyword
+    expect_parse_error("full script: missing 'on'",
+        "test x:\n"
+        "\tsay \"hi\""
+    );
+
+    // 18. Missing event name
+    expect_parse_error("full script: missing event name",
+        "on:\n"
+        "\tsay \"hi\""
+    );
+
+    // 19. If inside event header (not allowed)
+    expect_parse_error("full script: if inside event header",
+        "on if x:\n"
+        "\tsay \"hi\""
+    );
+
+    // 20. Else-if without preceding if
+    expect_parse_error("full script: else-if without if",
+        "on test:\n"
+        "\telse if x:\n"
+        "\t\tsay \"nope\""
+    );
+
+    // 21. Event without statement
+    expect_parse_error("full script: event without statement",
+        "on test:\n"
+        "on test2:\n"
+    );
+
+    // 21. Second event invalid syntax
+    expect_parse_error("full script: invalid second event",
+        "on test:\n"
+        "\tplayer.health = 10\n"
+        "another_test x:\n"
+        "\tplayer.health = 20\n"
+    );
 
     std::cout << "Running full script (failure) tests..." << std::endl;
 }
@@ -1087,6 +1601,7 @@ void run_parser_tests() {
     event_block_success();
     event_block_failure();
     full_script_success();
+    full_script_success_2();
     full_script_failure();
 
     parser_tests_failed = failed_tests_parser.size();
