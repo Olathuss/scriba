@@ -1432,11 +1432,9 @@ void full_script_success_2() {
 void full_script_failure() {
     std::cout << "Running full script (failure) tests..." << std::endl;
 
-    // 1. Only whitespace
     expect_parse_error("full script: only whitespace",
         "   \n\n\t\n");
 
-    // 2. Misaligned else (else indented deeper than its if)
     expect_parse_error("full script: misaligned else",
         "on test x:\n"
         "\tif x:\n"
@@ -1445,27 +1443,23 @@ void full_script_failure() {
         "\t\t\t\tsay \"nope\""
     );
 
-    // 3. Dangling else (no matching if)
     expect_parse_error("full script: dangling else",
         "on test:\n"
         "\telse:\n"
         "\t\tsay \"nope\""
     );
 
-    // 4. Else at top level
     expect_parse_error("full script: else at top level",
         "else:\n"
         "    say \"nope\""
     );
 
-    // 5. If with no colon
     expect_parse_error("full script: if missing colon",
         "on test:\n"
         "\tif x\n"
         "\t\tsay \"hi\""
     );
 
-    // 6. Else with no colon
     expect_parse_error("full script: else missing colon",
         "on test:\n"
         "\tif x:\n"
@@ -1474,21 +1468,18 @@ void full_script_failure() {
         "\t\tsay \"bye\""
     );
 
-    // 7. If with no condition
     expect_parse_error("full script: if missing condition",
         "on test:\n"
         "\tif:\n"
         "\t\tsay \"hi\""
     );
 
-    // 8. If with invalid condition
     expect_parse_error("full script: invalid condition",
         "on test:\n"
         "\tif 1 +:\n"
         "\t\tsay \"hi\""
     );
 
-    // 9. If with no body
     expect_parse_error("full script: if missing body",
         "on test:\n"
         "\tif x:\n"
@@ -1497,7 +1488,6 @@ void full_script_failure() {
         "\t\tsay \"bye\""
     );
 
-    // 10. Else-if incorrectly indented (should be parsed as dangling else)
     expect_parse_error("full script: else-if misaligned",
         "on test x:\n"
         "\tif x:\n"
@@ -1506,80 +1496,128 @@ void full_script_failure() {
         "\t\tsay \"nope\""
     );
 
-    // 11. Event missing colon
     expect_parse_error("full script: event missing colon",
         "on test\n"
         "\tsay \"hi\""
     );
 
-    // 12. Event with invalid name
     expect_parse_error("full script: invalid event name",
         "on 123:\n"
         "\tsay \"hi\""
     );
 
-    // 13. Event with no body
     expect_parse_error("full script: event missing body",
         "on test:\n"
     );
 
-    // 14. Unterminated block (indent but no statements)
     expect_parse_error("full script: unterminated block",
         "on test:\n"
         "\tif x:\n"
         "\t\t"
     );
 
-    // 15. Mixed indentation (tabs + spaces)
     expect_parse_error("full script: mixed indentation",
         "on test:\n"
         "    if x:\n"
         "\t\tsay \"hi\""
     );
 
-    // 16. Unexpected token inside event
     expect_parse_error("full script: unexpected token",
         "on test:\n"
         "\t@#$\n"
     );
 
-    // 17. Missing event keyword
     expect_parse_error("full script: missing 'on'",
         "test x:\n"
         "\tsay \"hi\""
     );
 
-    // 18. Missing event name
     expect_parse_error("full script: missing event name",
         "on:\n"
         "\tsay \"hi\""
     );
 
-    // 19. If inside event header (not allowed)
     expect_parse_error("full script: if inside event header",
         "on if x:\n"
         "\tsay \"hi\""
     );
 
-    // 20. Else-if without preceding if
     expect_parse_error("full script: else-if without if",
         "on test:\n"
         "\telse if x:\n"
         "\t\tsay \"nope\""
     );
 
-    // 21. Event without statement
     expect_parse_error("full script: event without statement",
         "on test:\n"
         "on test2:\n"
     );
 
-    // 21. Second event invalid syntax
     expect_parse_error("full script: invalid second event",
         "on test:\n"
         "\tplayer.health = 10\n"
         "another_test x:\n"
         "\tplayer.health = 20\n"
+    );
+
+    expect_parse_error("full script: event with invalid argument list",
+        "on test 123 abc:\n"
+        "\tsay \"hi\"\n"
+    );
+
+    expect_parse_error("full script: event with trailing garbage",
+        "on test x y: ???\n"
+        "\tsay \"hi\"\n"
+    );
+
+    expect_parse_error("full script: event with indent but no statements",
+        "on test:\n"
+        "\t\n"
+    );
+
+    expect_parse_error("full script: dedent past root",
+        "on test:\n"
+        "\tsay \"hi\"\n"
+        "        say \"nope\"\n"
+    );
+
+    expect_parse_error("full script: if block prematurely dedented",
+        "on test:\n"
+        "\tif x:\n"
+        "\t\tsay \"hi\"\n"
+        "    say \"nope\"\n"
+    );
+
+    expect_parse_error("full script: else wrong indentation",
+        "on test:\n"
+        "\tif x:\n"
+        "\t\tsay \"hi\"\n"
+        "else:\n"
+        "\tsay \"nope\"\n"
+    );
+
+    expect_parse_error("full script: else-if missing colon",
+        "on test:\n"
+        "\tif x:\n"
+        "\t\tsay \"hi\"\n"
+        "\telse if x\n"
+        "\t\tsay \"nope\"\n"
+    );
+
+    expect_parse_error("full script: invalid expression in condition",
+        "on test:\n"
+        "\tif x ==:\n"
+        "\t\tsay \"hi\"\n"
+    );
+
+    expect_parse_error("full script: if missing newline after colon",
+        "on test:\n"
+        "\tif x: say \"hi\"\n"
+    );
+
+    expect_parse_error("full script: invalid characters in event name",
+        "on te$st:\n"
+        "\tsay \"hi\"\n"
     );
 
     std::cout << "Running full script (failure) tests..." << std::endl;
