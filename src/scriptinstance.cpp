@@ -2,11 +2,11 @@
 #include "scriba/storagemanager.h"
 #include "scriba/parser.h"
 #include "scriba/scanner.h"
+#include "scriba/environment.h"
 
 #include <exception>
 
 namespace scriba {
-
 	ScriptInstance::ScriptInstance() = default;
 
 	ScriptInstance::~ScriptInstance() = default;
@@ -47,6 +47,22 @@ namespace scriba {
 
 	bool ScriptInstance::trigger_event(const std::string& name, const std::vector<Value>& args)
 	{
-		return false;
+		auto it = events.find(name);
+		if (it == events.end()) {
+			return false;
+		}
+
+		Environment env;
+		EventBlock& event = it->second;
+
+		for (int i = 0; i < event.arguments.size(); ++i) {
+			if (i >= args.size()) {
+				env.set(event.arguments[i].lexeme, Value(std::monostate()));
+				continue;
+			}
+			env.set(event.arguments[i].lexeme, args[i]);
+		}
+
+		return true;
 	}
 } // namespace scriba
