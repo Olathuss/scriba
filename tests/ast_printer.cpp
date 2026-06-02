@@ -5,7 +5,7 @@ string print(const shared_ptr<Expression>& in_expr, string prepend)
     if (auto expr = dynamic_cast<const MemberExpression*>(in_expr.get())) {
         return prepend + "(Member " +
             print(expr->object) + " " +
-            expr->property.lexeme + ")";
+            expr->token.lexeme + ")";
     }
 
     if (auto expr = dynamic_cast<const ArrayLiteralExpression*>(in_expr.get())) {

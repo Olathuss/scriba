@@ -5,8 +5,7 @@
 
 namespace scriba {
 	struct IdentifierExpression : Expression {
-		Token token;
 		IdentifierExpression(const Token& in_token) 
-			: token(in_token) {};
+			: Expression(in_token, ExpressionKind::Identifier) {};
 	};
 } // namespace scriba

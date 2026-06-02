@@ -4,12 +4,12 @@
 #include "scriba/errors/scanner_error.h"
 
 namespace scriba {
-    scriba::Scanner::Scanner(std::string_view in_source)
+    Scanner::Scanner(std::string_view in_source)
         : source(in_source)
     {
     }
 
-    std::vector<Token> scriba::Scanner::scan_tokens()
+    std::vector<Token> Scanner::scan_tokens()
     {
         while (!is_at_end()) {
             start = current;
@@ -20,7 +20,7 @@ namespace scriba {
         return tokens;
     }
 
-    void scriba::Scanner::scan_token()
+    void Scanner::scan_token()
     {
         handle_whitespace();
 
@@ -99,19 +99,19 @@ namespace scriba {
         }
     }
 
-    char scriba::Scanner::advance()
+    char Scanner::advance()
     {
         char current_char = source[current++];
         column++;
         return current_char;
     }
 
-    char scriba::Scanner::peek() const
+    char Scanner::peek() const
     {
         return is_at_end() ? '\0' : source[current];
     }
 
-    char scriba::Scanner::peek_next() const
+    char Scanner::peek_next() const
     {
         return (current + 1 >= source.size() ? '\0' : source[current + 1]);
     }
@@ -122,7 +122,7 @@ namespace scriba {
         return source[current - 1];
     }
 
-    bool scriba::Scanner::match(char expected)
+    bool Scanner::match(char expected)
     {
         if (is_at_end()) return false;
         if (source[current] != expected) return false;
@@ -132,18 +132,18 @@ namespace scriba {
         return true;
     }
 
-    bool scriba::Scanner::is_at_end() const
+    bool Scanner::is_at_end() const
     {
         return current >= source.size();
     }
 
-    void scriba::Scanner::add_token(TokenType in_type)
+    void Scanner::add_token(TokenType in_type)
     {
-        std::string_view lex = source.substr(start, current - start);
+        std::string_view lex(source.data() + start, current - start);
         tokens.emplace_back(in_type, std::string(lex), LiteralValue{}, line, column);
     }
 
-    void scriba::Scanner::add_token(TokenType in_type, std::string_view in_lexeme)
+    void Scanner::add_token(TokenType in_type, std::string_view in_lexeme)
     {
         tokens.emplace_back(in_type, std::string(in_lexeme), LiteralValue{}, line, column);
     }
@@ -155,17 +155,22 @@ namespace scriba {
         tokens.emplace_back(new_token);
     }
 
-    void scriba::Scanner::identifier()
+    void Scanner::identifier()
     {
         while (is_alphanumeric(peek())) advance();
 
-        std::string_view text = source.substr(start, current - start);
+        std::string_view text(source.data() + start, current - start);
         TokenType type = keyword_type(text);
 
         add_token(type, text);
+
+        if(type == TokenType::TRUE)
+            tokens.back().literal = true;
+        else if(type == TokenType::FALSE)
+            tokens.back().literal = false;
     }
 
-    void scriba::Scanner::number()
+    void Scanner::number()
     {
         while (is_digit(peek())) advance();
 
@@ -175,8 +180,9 @@ namespace scriba {
             while (is_digit(peek())) advance();
         }
 
-        std::string_view text = source.substr(start, current - start);
+        std::string_view text(source.data() + start, current - start);
         add_token(TokenType::NUMBER, text);
+        tokens.back().literal = std::stod(std::string(text));
     }
 
     void Scanner::number_starting_with_dot()
@@ -187,11 +193,12 @@ namespace scriba {
         // - peek() is guaranteed to be a digit (checked in scan_token)
 
         while (is_digit(peek())) advance();
-        std::string_view text = source.substr(start, current - start);
+        std::string_view text(source.data() + start, current - start);
         add_token(TokenType::NUMBER, text);
+        tokens.back().literal = std::stod(std::string(text));
     }
 
-    void scriba::Scanner::string_literal()
+    void Scanner::string_literal()
     {
         while (peek() != '"' && !is_at_end()) {
             if (peek() == '\n') handle_newline();
@@ -205,11 +212,12 @@ namespace scriba {
 
         advance();
 
-        std::string_view text = source.substr(start, current - start);
+        std::string_view text(source.data() + start, current - start);
         add_token(TokenType::STRING, text);
+        tokens.back().literal = std::string(text);
     }
 
-    void scriba::Scanner::handle_whitespace()
+    void Scanner::handle_whitespace()
     {
         if (at_line_start) {
             handle_indentation();
@@ -266,7 +274,7 @@ namespace scriba {
         add_indent_token(indent);
     }
 
-    void scriba::Scanner::handle_newline()
+    void Scanner::handle_newline()
     {
         at_line_start = true;
         line++;
@@ -274,19 +282,19 @@ namespace scriba {
         add_token(TokenType::NEWLINE, "");
     }
 
-    bool scriba::Scanner::is_alpha(char in_char)
+    bool Scanner::is_alpha(char in_char)
     {
         return (in_char >= 'a' && in_char <= 'z') ||
             (in_char >= 'A' && in_char <= 'Z') ||
             in_char == '_';
     }
 
-    bool scriba::Scanner::is_digit(char in_char)
+    bool Scanner::is_digit(char in_char)
     {
         return in_char >= '0' && in_char <= '9';
     }
 
-    bool scriba::Scanner::is_alphanumeric(char in_char)
+    bool Scanner::is_alphanumeric(char in_char)
     {
         return is_alpha(in_char) || is_digit(in_char);
     }

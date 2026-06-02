@@ -17,6 +17,7 @@ namespace scriba {
 	using LiteralValue = std::variant<
 		std::monostate,
 		double,
+		bool,
 		std::string
 	>;
 

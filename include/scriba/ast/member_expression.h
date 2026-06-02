@@ -8,7 +8,7 @@
 namespace scriba {
 	struct MemberExpression : Expression {
 		std::shared_ptr<Expression> object;
-		Token property;
-		MemberExpression(std::shared_ptr<Expression> in_object, const Token& in_property) : object(std::move(in_object)), property((in_property)) {};
+		MemberExpression(std::shared_ptr<Expression> in_object, const Token& in_property)
+			: Expression(in_property, ExpressionKind::Member), object(std::move(in_object)) {};
 	};
 } // namespace scriba

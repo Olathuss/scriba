@@ -5,6 +5,7 @@
 
 namespace scriba {
 	struct LiteralExpression : Expression {
-		LiteralExpression(const Token& in_token) : Expression(in_token) {};
+		LiteralExpression(const Token& in_token)
+			: Expression(in_token, ExpressionKind::Literal) {};
 	};
 } // namespace scriba
