@@ -58,6 +58,24 @@ string print(const shared_ptr<Expression>& in_expr, string prepend)
             print(expr->right) + ")";
     }
 
+    if (auto expr = dynamic_cast<const CallExpression*>(in_expr.get())) {
+        string out = prepend + "(Call " + print(expr->callee);
+        for (auto& argument : expr->arguments) {
+            out += " " + print(argument);
+        }
+        out += ")";
+        return out;
+    }
+
+    if (auto expr = dynamic_cast<const TriggerExpression*>(in_expr.get())) {
+        string out = prepend + "(Trigger " + print(expr->left);
+        for (auto& argument : expr->arguments) {
+            out += " " + print(argument);
+        }
+        out += ")";
+        return out;
+    }
+
     return prepend + "(UnknownExpression)";
 }
 
@@ -85,10 +103,7 @@ string print(const shared_ptr<Statement>& in_stmnt, string prepend)
 
 
     if (auto statement = dynamic_cast<const CommandStatement*>(in_stmnt.get())) {
-        string out = prepend + "(Command " + print(statement->left);
-        for (auto& argument : statement->arguments) {
-            out += " " + print(argument);
-        }
+        string out = prepend + "(Command " + print(statement->call);
         out += ")";
         return out;
     }
@@ -100,12 +115,7 @@ string print(const shared_ptr<Statement>& in_stmnt, string prepend)
     }
     
     if (auto statement = dynamic_cast<const TriggerStatement*>(in_stmnt.get())) {
-        string out = prepend + "(Trigger " + print(statement->left);
-        for (auto& argument : statement->arguments) {
-            out += " " + print(argument);
-        }
-        out += ")";
-        return out;
+        return prepend + print(statement->trigger);
     }
 
     if (auto statement = dynamic_cast<const BlockStatement*>(in_stmnt.get())) {
@@ -124,7 +134,7 @@ string print(const EventBlock& block, string prepend)
 {
     string out = "(Event " + block.event_token.lexeme;
 
-    for (auto& argument : block.arguments) {
+    for (auto& argument : block.parameters) {
         out += " " + argument.lexeme;
     }
 

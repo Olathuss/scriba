@@ -5,9 +5,9 @@
 #include <string>
 #include <utility>
 
-namespace scriba {
-	class Value;
+#include "scriba/value.h"
 
+namespace scriba {
 	class Environment {
 		std::unordered_map<std::string, Value> table;
 

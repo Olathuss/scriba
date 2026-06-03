@@ -39,17 +39,23 @@ namespace scriba {
 
         Token event_name = consume(TokenType::IDENTIFIER, "Expected event name after 'on'.");
 
-        std::vector<Token> arguments;
-        while (check(TokenType::IDENTIFIER)) {
-            arguments.push_back(advance());
+        consume(TokenType::PAREN_OPEN, "Expected '(' after event declaration.");
+
+        std::vector<Token> parameters;
+        if (!check(TokenType::PAREN_CLOSE)) {
+            do {
+                Token param = consume(TokenType::IDENTIFIER, "Expected identifier as argument name.");
+                parameters.push_back(param);
+            } while (match(TokenType::COMMA));
         }
 
+        consume(TokenType::PAREN_CLOSE, "Expected ')' on closing event declaration.");
         consume(TokenType::COLON, "Expected ':' after event declaration.");
         consume(TokenType::NEWLINE, "Expected newline after ':'");
 
         EventBlock event_block;
         event_block.event_token = event_name;
-        event_block.arguments = arguments;
+        event_block.parameters = parameters;
         IndentLevel block_indent = start_block();
 
         event_block.statements = parse_block_body(block_indent);
@@ -59,6 +65,7 @@ namespace scriba {
     std::shared_ptr<Statement> Parser::parse_block()
     {
         consume(TokenType::NEWLINE, "Expected newline after ':' and before block.");
+        skip_empty();
         IndentLevel block_indent = start_block();
         auto statements = parse_block_body(block_indent);
         return std::make_shared<BlockStatement>(std::move(statements));
@@ -67,9 +74,16 @@ namespace scriba {
     std::vector<std::shared_ptr<Statement>> Parser::parse_block_body(const IndentLevel& block_indent)
     {
         std::vector<std::shared_ptr<Statement>> statements;
+        skip_empty();
         statements.push_back(parse_statement());
 
-        while (still_in_block(block_indent)) {
+        while (true) {
+            skip_empty();
+
+            if (!still_in_block(block_indent)) {
+                break;
+            }
+
             statements.push_back(parse_statement());
         }
 
@@ -120,23 +134,11 @@ namespace scriba {
 
     std::shared_ptr<Statement> Parser::parse_trigger_statement()
     {
-        std::shared_ptr<Expression> left_expression = std::make_shared<IdentifierExpression>(previous());
-
-        if (match(TokenType::DOT)) {
-            left_expression = parse_member_chain(std::move(left_expression));
-        }
-
-        std::vector<std::shared_ptr<Expression>> arguments;
-
-        while (token_can_start_expression(peek().get_type())) {
-            arguments.push_back(parse_expression());
-        }
-
+        auto trigger = parse_trigger_expression();
         consume(TokenType::NEWLINE, "Expected end of trigger command.");
 
         return std::make_shared<TriggerStatement>(
-            std::move(left_expression),
-            std::move(arguments)
+            std::move(trigger)
         );
     }
 
@@ -159,17 +161,13 @@ namespace scriba {
 
     std::shared_ptr<Statement> Parser::parse_command_statement(std::shared_ptr<Expression> left_expression)
     {
-        std::vector<std::shared_ptr<Expression>> arguments;
-
-        while (token_can_start_expression(peek().get_type())) {
-            arguments.push_back(parse_expression());
-        }
-
+        auto arguments = parse_arguments();
         consume(TokenType::NEWLINE, "Expected end of command.");
 
+        auto call = std::make_shared<CallExpression>(left_expression, arguments);
+
         return std::make_shared<CommandStatement>(
-            std::move(left_expression),
-            std::move(arguments)
+            std::move(call)
         );
     }
 
@@ -277,7 +275,21 @@ namespace scriba {
             auto right = parse_unary();
             return std::make_shared<UnaryExpression>(token, std::move(right));
         }
-        return parse_postfix();
+        return parse_call();
+    }
+
+    std::shared_ptr<Expression> Parser::parse_call()
+    {
+        auto expression = parse_postfix();
+
+        if (expression->kind == ExpressionKind::Member &&
+            check(TokenType::PAREN_OPEN)) {
+            auto arguments = parse_arguments();
+
+            return std::make_shared<CallExpression>(expression, arguments);
+        }
+
+        return expression;
     }
     
     std::shared_ptr<Expression> Parser::parse_postfix()
@@ -299,6 +311,8 @@ namespace scriba {
 
         if (match(TokenType::NUMBER)) return std::make_shared<LiteralExpression>(previous());
         if (match(TokenType::STRING)) return std::make_shared<LiteralExpression>(previous());
+
+        if (match(TokenType::TRIGGER)) return parse_trigger_expression();
 
         if (match(TokenType::IDENTIFIER)) return std::make_shared<IdentifierExpression>(previous());
 
@@ -354,6 +368,37 @@ namespace scriba {
             object = std::make_shared<MemberExpression>(std::move(object), next_property);
         }
         return object;
+    }
+
+    std::vector<std::shared_ptr<Expression>> Parser::parse_arguments()
+    {
+        consume(TokenType::PAREN_OPEN, "Expected '(' after command.");
+        std::vector<std::shared_ptr<Expression>> arguments;
+
+        if (!check(TokenType::PAREN_CLOSE)) {
+            do {
+                arguments.push_back(parse_expression());
+            } while (match(TokenType::COMMA));
+        }
+
+        consume(TokenType::PAREN_CLOSE, "Expected ')' on closing command.");
+        return arguments;
+    }
+
+    std::shared_ptr<Expression> Parser::parse_trigger_expression()
+    {
+        Token name = consume(TokenType::IDENTIFIER, "Expected event name after 'trigger'.");
+        std::shared_ptr<Expression> left = std::make_shared<IdentifierExpression>(name);
+
+        if (match(TokenType::DOT)) {
+            left = parse_member_chain(std::move(left));
+        }
+
+        auto arguments = parse_arguments();
+        return std::make_shared<TriggerExpression>(
+            std::move(left),
+            std::move(arguments)
+        );
     }
 
     Token Parser::advance() {
@@ -413,6 +458,7 @@ namespace scriba {
     bool Parser::is_operator(const TokenType& type) {
         return false;
     }
+
     bool Parser::token_can_start_expression(const TokenType& type) const
     {
         switch (type) {

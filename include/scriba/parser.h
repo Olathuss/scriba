@@ -17,6 +17,8 @@
 #include "scriba/ast/grouping_expression.h"
 #include "scriba/ast/identifier_expression.h"
 #include "scriba/ast/member_expression.h"
+#include "scriba/ast/call_expression.h"
+#include "scriba/ast/trigger_expression.h"
 #include "scriba/ast/array_literal_expression.h"
 #include "scriba/ast/statement.h"
 #include "scriba/ast/if_statement.h"
@@ -82,6 +84,8 @@ namespace scriba {
 
         std::shared_ptr<Expression> parse_unary();
 
+        std::shared_ptr<Expression> parse_call();
+
         std::shared_ptr<Expression> parse_postfix();
 
         std::shared_ptr<Expression> parse_primary();
@@ -89,6 +93,10 @@ namespace scriba {
         std::shared_ptr<ArrayLiteralExpression> parse_array_literal();
 
         std::shared_ptr<Expression> parse_member_chain(std::shared_ptr<Expression> object);
+
+        std::vector<std::shared_ptr<Expression>> parse_arguments();
+
+        std::shared_ptr<Expression> parse_trigger_expression();
 
         bool is_comparison_operator(const Token& token) const { return token.is_comparison(); }
         bool is_unary_expression(const Token& token) const { return token.is_unary(); }

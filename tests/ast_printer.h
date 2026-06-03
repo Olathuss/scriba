@@ -11,6 +11,8 @@
 #include "scriba/ast/and_expression.h"
 #include "scriba/ast/or_expression.h"
 #include "scriba/ast/range_expression.h"
+#include "scriba/ast/call_expression.h"
+#include "scriba/ast/trigger_expression.h"
 #include "scriba/ast/statement.h"
 #include "scriba/ast/if_statement.h"
 #include "scriba/ast/assignment_statement.h"

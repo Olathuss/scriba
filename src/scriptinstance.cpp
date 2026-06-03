@@ -55,12 +55,12 @@ namespace scriba {
 		Environment env;
 		EventBlock& event = it->second;
 
-		for (int i = 0; i < event.arguments.size(); ++i) {
+		for (int i = 0; i < event.parameters.size(); ++i) {
 			if (i >= args.size()) {
-				env.set(event.arguments[i].lexeme, Value(std::monostate()));
+				env.set(event.parameters[i].lexeme, Value(std::monostate()));
 				continue;
 			}
-			env.set(event.arguments[i].lexeme, args[i]);
+			env.set(event.parameters[i].lexeme, args[i]);
 		}
 
 		return true;

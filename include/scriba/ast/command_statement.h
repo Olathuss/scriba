@@ -8,11 +8,10 @@
 
 namespace scriba {
 	struct CommandStatement : Statement {
-		std::shared_ptr<Expression> left;
-		std::vector<std::shared_ptr<Expression>> arguments;
+		std::shared_ptr<Expression> call;
 
-		CommandStatement(std::shared_ptr<Expression> in_left, std::vector<std::shared_ptr<Expression>> args)
-			: left(std::move(in_left)), arguments(std::move(args)) {
+		CommandStatement(std::shared_ptr<Expression> in_call)
+			: call(std::move(in_call)) {
 		}
 	};
 } // namespace scriba

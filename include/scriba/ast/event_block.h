@@ -9,7 +9,7 @@
 namespace scriba {
 	struct EventBlock {
 		Token event_token;
-		std::vector<Token> arguments;
+		std::vector<Token> parameters;
 		std::vector<std::shared_ptr<Statement>> statements;
 	};
 } // namespace scriba

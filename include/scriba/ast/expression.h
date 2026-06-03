@@ -14,6 +14,8 @@ namespace scriba {
 		Range,
 		And,
 		Or,
+		Call,
+		Trigger,
 		Expression
 	};
 

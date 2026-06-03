@@ -8,11 +8,10 @@
 
 namespace scriba {
 	struct TriggerStatement : Statement {
-		std::shared_ptr<Expression> left;
-		std::vector<std::shared_ptr<Expression>> arguments;
+		std::shared_ptr<Expression> trigger;
 
-		TriggerStatement(std::shared_ptr<Expression> in_left, std::vector<std::shared_ptr<Expression>> args)
-			: left(std::move(in_left)), arguments(std::move(args)) {
+		TriggerStatement(std::shared_ptr<Expression> in_trigger)
+			: trigger(std::move(in_trigger)) {
 		}
 	};
 } // namespace scriba
