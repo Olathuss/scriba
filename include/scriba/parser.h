@@ -4,7 +4,7 @@
 #include <unordered_map>
 
 #include "scriba/token.h"
-#include "scriba/storagemanager.h"
+#include "scriba/storage_manager.h"
 
 #include "scriba/ast/event_block.h"
 #include "scriba/ast/expression.h"

@@ -1,4 +1,4 @@
-#include "scriba/storagemanager.h"
+#include "scriba/storage_manager.h"
 
 namespace scriba {
 	StorageManager::StorageManager()

@@ -5,7 +5,7 @@
 #include "ast_printer.h"
 #include "scriba/scanner.h"
 #include "scriba/parser.h"
-#include "scriba/storagemanager.h"
+#include "scriba/storage_manager.h"
 #include "scriba/errors/parse_error.h"
 #include "scriba/errors/scanner_error.h"
 

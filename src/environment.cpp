@@ -1,5 +1,5 @@
 #include "scriba/environment.h"
-#include "scriba/scriptinstance.h"
+#include "scriba/script_instance.h"
 #include "scriba/value.h"
 
 namespace scriba {

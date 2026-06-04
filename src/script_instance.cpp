@@ -1,5 +1,5 @@
-#include "scriba/scriptinstance.h"
-#include "scriba/storagemanager.h"
+#include "scriba/script_instance.h"
+#include "scriba/storage_manager.h"
 #include "scriba/parser.h"
 #include "scriba/scanner.h"
 #include "scriba/environment.h"

@@ -1,6 +1,6 @@
 #include "scriba/scanner.h"
 #include "scriba/keywords.h"
-#include "scriba/storagemanager.h"
+#include "scriba/storage_manager.h"
 #include "scriba/errors/scanner_error.h"
 
 namespace scriba {
