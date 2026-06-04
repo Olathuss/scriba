@@ -11,7 +11,7 @@ namespace scriba {
 		std::shared_ptr<Expression> trigger;
 
 		TriggerStatement(std::shared_ptr<Expression> in_trigger)
-			: trigger(std::move(in_trigger)) {
+			: Statement(StatementKind::Trigger), trigger(std::move(in_trigger)) {
 		}
 	};
 } // namespace scriba

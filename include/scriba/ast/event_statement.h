@@ -11,6 +11,6 @@ namespace scriba {
 		std::vector<std::string> arguments;
 		std::vector<std::shared_ptr<Statement>> body;
 
-		EventStatement() {}
+		EventStatement(): Statement(StatementKind::Event) {}
 	};
 } // namespace scriba

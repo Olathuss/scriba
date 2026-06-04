@@ -11,7 +11,7 @@ namespace scriba {
 		std::shared_ptr<Expression> call;
 
 		CommandStatement(std::shared_ptr<Expression> in_call)
-			: call(std::move(in_call)) {
+			: Statement(StatementKind::Command), call(std::move(in_call)) {
 		}
 	};
 } // namespace scriba

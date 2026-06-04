@@ -13,7 +13,8 @@ namespace scriba {
 		IfStatement(std::shared_ptr<Expression> in_condition,
 			std::shared_ptr<Statement> in_then,
 			std::shared_ptr<Statement> in_else)
-			: condition(std::move(in_condition)),
+			: Statement(StatementKind::If),
+			condition(std::move(in_condition)),
 			then_branch(std::move(in_then)),
 			else_branch(std::move(in_else)) {}
 	};

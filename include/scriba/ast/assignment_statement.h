@@ -11,6 +11,6 @@ namespace scriba {
 		std::shared_ptr<Expression> right;
 
 		AssignmentStatement(std::shared_ptr<Expression> in_left, std::shared_ptr<Expression> in_right)
-			: left(std::move(in_left)), right(std::move(in_right)) {}
+			: Statement(StatementKind::Assignment), left(std::move(in_left)), right(std::move(in_right)) {}
 	};
 } // namespace scriba
