@@ -51,7 +51,7 @@ namespace scriba {
 		if (to_bool(left))
 			return Value(true);
 
-		Value right = evaluate_expression(static_cast<const Expression>(*exp.right.get()), env);
+		Value right = evaluate_expression(*exp.right, env);
 		return Value(to_bool(right));
 	}
 
@@ -70,7 +70,7 @@ namespace scriba {
 	Value Evaluator::ev_binary_expression(const BinaryExpression& exp, Environment& env)
 	{
 		Value left = evaluate_expression(*exp.left, env);
-		Value right = evaluate_expression(*exp.left, env);
+		Value right = evaluate_expression(*exp.right, env);
 
 		switch (exp.token.get_type()) {
 		case TokenType::PLUS:
@@ -101,7 +101,7 @@ namespace scriba {
 		return env.get(name);
 	}
 
-	Value Evaluator::ev_member_expression(const IdentifierExpression& exp, Environment& env)
+	Value Evaluator::ev_member_expression(const MemberExpression& exp, Environment& env)
 	{
 		return Value();
 	}

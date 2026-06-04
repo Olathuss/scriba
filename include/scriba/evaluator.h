@@ -35,7 +35,7 @@ namespace scriba {
 		Value ev_binary_expression(const BinaryExpression& exp, Environment& env);
 		Value ev_grouping_expression(const GroupingExpression& exp, Environment& env);
 		Value ev_identifier_expression(const IdentifierExpression& exp, Environment& env);
-		Value ev_member_expression(const IdentifierExpression& exp, Environment& env);
+		Value ev_member_expression(const MemberExpression& exp, Environment& env);
 		Value ev_range_expression(const RangeExpression& exp, Environment& env);
 		Value ev_unary_expression(const UnaryExpression& exp, Environment& env);
 		Value ev_literal_expression(const LiteralExpression& exp, Environment& env);
