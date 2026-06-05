@@ -12,11 +12,11 @@ namespace scriba {
 		std::unordered_map<std::string, Value> table;
 
 	public:
-		Value get(std::string var_name);
+		Value get(const std::string& var_name);
 
-		void set(std::string var_name, Value var_value);
+		void set(const std::string& var_name, Value var_value);
 
-		bool exists(std::string var_name) {
+		bool exists(const std::string& var_name) {
 			auto it = table.find(var_name);
 			if (it != table.end()) {
 				return true;

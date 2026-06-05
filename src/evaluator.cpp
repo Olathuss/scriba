@@ -1,76 +1,103 @@
 #include "scriba/evaluator.h"
 #include "scriba/errors/runtime_error.h"
 
+
+#include <cassert>
+
 namespace scriba {
-	Value scriba::Evaluator::evaluate_expression(const Expression& exp, Environment& env)
+	Value scriba::Evaluator::evaluate_expression(const Expression& exp)
 	{
 		switch (exp.kind) {
 		case ExpressionKind::Literal:
-			return ev_literal_expression(static_cast<const LiteralExpression&>(exp), env);
+			return ev_literal_expression(static_cast<const LiteralExpression&>(exp));
 		case ExpressionKind::And:
-			return ev_and_expression(static_cast<const AndExpression&>(exp), env);
+			return ev_and_expression(static_cast<const AndExpression&>(exp));
 		case ExpressionKind::Or:
-			return ev_or_expression(static_cast<const OrExpression&>(exp), env);
+			return ev_or_expression(static_cast<const OrExpression&>(exp));
 		case ExpressionKind::Unary:
-			return ev_unary_expression(static_cast<const UnaryExpression&>(exp), env);
+			return ev_unary_expression(static_cast<const UnaryExpression&>(exp));
 		case ExpressionKind::Array:
-			return ev_array_expression(static_cast<const ArrayLiteralExpression&>(exp), env);
+			return ev_array_expression(static_cast<const ArrayLiteralExpression&>(exp));
 		case ExpressionKind::Grouping:
-			return ev_grouping_expression(static_cast<const GroupingExpression&>(exp), env);
+			return ev_grouping_expression(static_cast<const GroupingExpression&>(exp));
 		case ExpressionKind::Binary:
-			return ev_binary_expression(static_cast<const BinaryExpression&>(exp), env);
+			return ev_binary_expression(static_cast<const BinaryExpression&>(exp));
 		case ExpressionKind::Identifier:
-			return ev_identifier_expression(static_cast<const IdentifierExpression&>(exp), env);
+			return ev_identifier_expression(static_cast<const IdentifierExpression&>(exp));
+		case ExpressionKind::Call:
+			return ev_call_expression(static_cast<const CallExpression&>(exp));
+		case ExpressionKind::Member:
+			return ev_member_expression(static_cast<const MemberExpression&>(exp));
+		case ExpressionKind::Range:
+			return ev_range_expression(static_cast<const RangeExpression&>(exp));
+		case ExpressionKind::Trigger:
+			return ev_trigger_expression(static_cast<const TriggerExpression&>(exp));
 		}
 	}
 
-	void Evaluator::execute_statement(const Statement& statement, Environment& env)
+	void Evaluator::execute_statement(const Statement& statement)
 	{
-
+		switch (statement.kind) {
+		case StatementKind::Command:
+			exe_command_statement(static_cast<const CommandStatement&>(statement));
+			return;
+		case StatementKind::Trigger:
+			exe_trigger_statement(static_cast<const TriggerStatement&>(statement));
+			return;
+		case StatementKind::Assignment:
+			exe_assignment_statement(static_cast<const AssignmentStatement&>(statement));
+			return;
+		case StatementKind::If:
+			exe_if_statement(static_cast<const IfStatement&>(statement));
+			return;
+		}
 	}
 
-	void Evaluator::execute_block(const std::vector<Statement>& block, Environment env)
+	void Evaluator::execute_block(const std::vector<std::shared_ptr<Statement>>& block)
 	{
+		for (auto& statement : block) {
+			execute_statement(*statement);
+		}
 	}
 
-	Value Evaluator::ev_and_expression(const AndExpression& exp, Environment& env)
+	Value Evaluator::ev_and_expression(const AndExpression& exp)
 	{
-		Value left = evaluate_expression(*exp.left, env);
+		Value left = evaluate_expression(*exp.left);
 
 		if (!to_bool(left))
 			return Value(false);
 
-		Value right = evaluate_expression(*exp.right, env);
+		Value right = evaluate_expression(*exp.right);
 		return Value(to_bool(right));
 	}
 
-	Value Evaluator::ev_or_expression(const OrExpression& exp, Environment& env)
+	Value Evaluator::ev_or_expression(const OrExpression& exp)
 	{
-		Value left = evaluate_expression(*exp.left, env);
+		Value left = evaluate_expression(*exp.left);
 
 		if (to_bool(left))
 			return Value(true);
 
-		Value right = evaluate_expression(*exp.right, env);
+		Value right = evaluate_expression(*exp.right);
 		return Value(to_bool(right));
 	}
 
-	Value Evaluator::ev_array_expression(const ArrayLiteralExpression& exp, Environment& env)
+	Value Evaluator::ev_array_expression(const ArrayLiteralExpression& exp)
 	{
 		std::vector<Value> array;
 		array.reserve(exp.elements.size());
 
 		for (auto& e : exp.elements) {
-			array.push_back(evaluate_expression(*e, env));
+			array.push_back(evaluate_expression(*e));
 		}
 
 		return Value(array);
 	}
 
-	Value Evaluator::ev_binary_expression(const BinaryExpression& exp, Environment& env)
+	Value Evaluator::ev_binary_expression(const BinaryExpression& exp)
 	{
-		Value left = evaluate_expression(*exp.left, env);
-		Value right = evaluate_expression(*exp.right, env);
+		Value left = evaluate_expression(*exp.left);
+		Value right = evaluate_expression(*exp.right);
 
 		switch (exp.token.get_type()) {
 		case TokenType::PLUS:
@@ -86,30 +113,33 @@ namespace scriba {
 		}
 	}
 
-	Value Evaluator::ev_grouping_expression(const GroupingExpression& exp, Environment& env)
+	Value Evaluator::ev_grouping_expression(const GroupingExpression& exp)
 	{
-		return evaluate_expression(*exp.inner, env);
+		return evaluate_expression(*exp.inner);
 	}
 
-	Value Evaluator::ev_identifier_expression(const IdentifierExpression& exp, Environment& env)
+	Value Evaluator::ev_identifier_expression(const IdentifierExpression& exp)
 	{
 		const std::string& name = exp.token.lexeme;
 
-		if (!env.exists(name))
+		if (!environment.exists(name))
 			throw RuntimeError("Undefined variable: '" + name + "'", exp.token);
 
-		return env.get(name);
+		return environment.get(name);
 	}
 
-	Value Evaluator::ev_member_expression(const MemberExpression& exp, Environment& env)
+	Value Evaluator::ev_member_expression(const MemberExpression& exp)
 	{
-		return Value();
+		const auto [path, object_ref] = get_object_ref(exp);
+		const ObjectTypeInfo& type_info = *object_ref.type;
+		const PropertyInfo& property = type_info.get_property(path, exp.token);
+		return property.getter(object_ref.instance);
 	}
 
-	Value Evaluator::ev_range_expression(const RangeExpression& exp, Environment& env)
+	Value Evaluator::ev_range_expression(const RangeExpression& exp)
 	{
-		Value left = evaluate_expression(*exp.left, env);
-		Value right = evaluate_expression(*exp.right, env);
+		Value left = evaluate_expression(*exp.left);
+		Value right = evaluate_expression(*exp.right);
 
 		if (!left.is_number() || !right.is_number())
 			throw RuntimeError("Range values must be valid numbers", exp.token);
@@ -120,7 +150,7 @@ namespace scriba {
 		return Value(range);
 	}
 
-	Value Evaluator::ev_literal_expression(const LiteralExpression& exp, Environment& env)
+	Value Evaluator::ev_literal_expression(const LiteralExpression& exp)
 	{
 		const auto& literal = exp.token.literal;
 
@@ -139,9 +169,58 @@ namespace scriba {
 		throw RuntimeError("Invalid literal expression", exp.token);
 	}
 
-	Value Evaluator::ev_unary_expression(const UnaryExpression& exp, Environment& env)
+	Value Evaluator::ev_call_expression(const CallExpression& exp)
 	{
-		Value operand = evaluate_expression(*exp.operand, env);
+		return Value();
+	}
+
+	Value Evaluator::ev_trigger_expression(const TriggerExpression& exp)
+	{
+		return Value();
+	}
+
+	void Evaluator::exe_command_statement(const CommandStatement& statement)
+	{
+		evaluate_expression(*statement.call);
+	}
+
+	void Evaluator::exe_trigger_statement(const TriggerStatement& statement)
+	{
+		evaluate_expression(*statement.trigger);
+	}
+
+	void Evaluator::exe_assignment_statement(const AssignmentStatement& statement)
+	{
+	}
+
+	void Evaluator::exe_if_statement(const IfStatement& statement)
+	{
+		Value result = evaluate_expression(*statement.condition);
+		bool truth = result.is_bool() && result.as_bool();
+
+		if (truth)
+		{
+			auto* block = dynamic_cast<BlockStatement*>(statement.then_branch.get());
+			if (!block)
+				throw RuntimeError("If then-branch is not a block", statement.condition->token);
+			execute_block(block->statements);
+			return;
+		}
+
+		if (statement.else_branch) {
+			auto* block = dynamic_cast<BlockStatement*>(statement.else_branch.get());
+			if (!block)
+				throw RuntimeError("If else-branch is not a block", statement.condition->token);
+			execute_block(block->statements);
+			return;
+		}
+
+		throw RuntimeError("If statement has invalid block statement", Token());
+	}
+
+	Value Evaluator::ev_unary_expression(const UnaryExpression& exp)
+	{
+		Value operand = evaluate_expression(*exp.operand);
 		
 		switch (exp.token.get_type()) {
 		case TokenType::NOT:
@@ -199,5 +278,32 @@ namespace scriba {
 		}
 
 		throw RuntimeError("Invalid operands for '/'", op);
+	}
+
+	const std::pair<std::string, ObjectRef> Evaluator::get_object_ref(const MemberExpression& exp)
+	{
+		std::string path = exp.token.lexeme;
+		auto* next = dynamic_cast<MemberExpression*>(exp.object.get());
+		auto* last = next;
+		while (next) {
+			last = next;
+			path = next->token.lexeme + "." + path;
+			next = dynamic_cast<MemberExpression*>(next->object.get());
+		}
+
+		if (!last || !last->object)
+			throw RuntimeError("Invalid member chain.", exp.token);
+
+		auto* ident = dynamic_cast<IdentifierExpression*>(last->object.get());
+		if (!ident)
+			throw RuntimeError("Invalid member chain", exp.token);
+
+		Value identifier = evaluate_expression(*ident);
+
+		if (!identifier.is_object()) {
+			throw RuntimeError("Member is not valid object.", ident->token);
+		}
+
+		return { path, identifier.as_object() };
 	}
 } // namespace scriba

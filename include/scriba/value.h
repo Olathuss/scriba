@@ -1,8 +1,9 @@
 #pragma once
 
 #include <string>
-#include <functional>
 #include <variant>
+
+#include "scriba/object.h"
 
 namespace scriba {
     struct Range {
@@ -12,21 +13,6 @@ namespace scriba {
 
     // Forward declare Value as a class
     class Value;
-
-    struct ObjectTypeInfo {
-        std::string name;
-
-        std::function<Value(void* instance, std::string_view property)> get_property;
-        std::function<void(void* instance, std::string_view property, const Value&)> set_property;
-
-        std::function<Value(void* instance, std::string_view method, const std::vector<Value>& args)> call_method;
-    };
-
-    struct ObjectRef {
-        void* instance = nullptr;
-        const ObjectTypeInfo* type = nullptr;
-    };
-
     class Value {
     public:
         using Variant = std::variant<
@@ -75,6 +61,14 @@ namespace scriba {
 
         bool as_bool() const {
             return std::get<bool>(data);
+        }
+
+        bool is_object() const {
+            return std::holds_alternative<ObjectRef>(data);
+        }
+
+        ObjectRef as_object() const {
+            return std::get<ObjectRef>(data);
         }
     };
 } // namespace scriba

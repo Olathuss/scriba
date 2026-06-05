@@ -13,6 +13,7 @@ namespace scriba {
     class StorageManager;
     class Parser;
     class Scanner;
+    class TypeRegistry;
 
     class ScriptInstance {
 
