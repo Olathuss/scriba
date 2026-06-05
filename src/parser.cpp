@@ -585,4 +585,12 @@ namespace scriba {
 
         indent_stack.resize(index + 1);
     }
+    std::shared_ptr<Expression> Parser::parse_expression_for_test()
+    {
+        return parse_expression();
+    }
+    std::shared_ptr<Statement> Parser::parse_statement_for_test()
+    {
+        return parse_statement();
+    }
 } // namespace scriba

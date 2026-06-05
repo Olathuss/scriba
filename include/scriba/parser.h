@@ -140,5 +140,10 @@ namespace scriba {
             indent_stack.clear();
             indent_stack.push_back({ '\0', 0, 0 });
         }
+
+    // !-- Test-only public entry points --!
+    public:
+        std::shared_ptr<Expression> parse_expression_for_test();
+        std::shared_ptr<Statement> parse_statement_for_test();
     };
 } // namespace scriba
