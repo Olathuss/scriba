@@ -133,6 +133,10 @@ namespace scriba {
 		const auto [path, object_ref] = get_object_ref(exp);
 		const ObjectTypeInfo& type_info = *object_ref.type;
 		const PropertyInfo& property = type_info.get_property(path, exp.token);
+
+		if (!property.getter)
+			throw RuntimeError("Property '" + path + "' cannot be read", exp.token);
+
 		return property.getter(object_ref.instance);
 	}
 
@@ -171,7 +175,35 @@ namespace scriba {
 
 	Value Evaluator::ev_call_expression(const CallExpression& exp)
 	{
-		return Value();
+		auto& callee = *exp.callee;
+
+		if (callee.kind != ExpressionKind::Member)
+			// Call will work on identifiers, but for now only allow members
+			throw RuntimeError("Can only assign values to object properties", callee.token);
+
+		const auto [path, object_ref] = get_object_ref(static_cast<MemberExpression&>(callee));
+		const ObjectTypeInfo& type_info = *object_ref.type;
+		const MethodInfo& method = type_info.get_method(path, callee.token);
+
+		if (!object_ref.instance) {
+			auto identifier = exp.token.lexeme;
+			auto pos = identifier.find('.');
+			if (pos != std::string::npos)
+				identifier = identifier.substr(0, pos);
+			throw RuntimeError("'" + identifier + "' is not a valid object", exp.token);
+		}
+
+		if (!method.invoke)
+			throw RuntimeError("'" + path + "' is not a valid method", exp.token);
+
+		std::vector<Value> arguments;
+		arguments.reserve(exp.arguments.size());
+		for (auto& arg : exp.arguments) {
+			auto value = evaluate_expression(*arg);
+			arguments.push_back(value);
+		}
+
+		return method.invoke(object_ref.instance, arguments);
 	}
 
 	Value Evaluator::ev_trigger_expression(const TriggerExpression& exp)
@@ -191,6 +223,22 @@ namespace scriba {
 
 	void Evaluator::exe_assignment_statement(const AssignmentStatement& statement)
 	{
+		auto& left = *statement.left;
+
+		if (left.kind != ExpressionKind::Member) {
+			// Assignment does not support identifiers or custom variables at the mmoment
+			throw RuntimeError("Can only assign values to object properties", left.token);
+		}
+
+		const auto [path, object_ref] = get_object_ref(static_cast<MemberExpression&>(left));
+		const ObjectTypeInfo& type_info = *object_ref.type;
+		const PropertyInfo& property = type_info.get_property(path, left.token);
+
+		if (!property.setter)
+			throw RuntimeError("Property '" + path + "' is read-only", left.token);
+
+		Value right = evaluate_expression(*statement.right);
+		property.setter(object_ref.instance, right);
 	}
 
 	void Evaluator::exe_if_statement(const IfStatement& statement)
