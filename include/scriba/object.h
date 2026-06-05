@@ -1,18 +1,22 @@
+#pragma once
+
 #include <string>
 #include <functional>
+#include <unordered_map>
 
-#include "scriba/value.h"
 #include "scriba/errors/runtime_error.h"
 #include "scriba/token.h"
 
 namespace scriba {
+    struct Value;
+
     struct PropertyInfo {
-        std::function<Value(void* instance)> getter;
-        std::function<void(void* instance, const Value&)> setter;
+        std::function<Value(void*)> getter;
+        std::function<void(void*, const Value&)> setter;
     };
 
     struct MethodInfo {
-        std::function<Value(void* instance, const std::vector<Value>& args)> invoke;
+        std::function<Value(void*, const std::vector<Value>&)> invoke;
     };
 
     struct ObjectTypeInfo {
