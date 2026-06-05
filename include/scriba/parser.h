@@ -50,6 +50,7 @@ namespace scriba {
 
         void parse_script();
 
+    private:
         EventBlock parse_event_block();
 
         std::shared_ptr<Statement> parse_block();
