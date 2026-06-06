@@ -33,6 +33,8 @@ namespace scriba {
 		case ExpressionKind::Trigger:
 			return ev_trigger_expression(static_cast<const TriggerExpression&>(exp));
 		}
+
+		throw RuntimeError("Unknown expression kind.", exp.token);
 	}
 
 	void Evaluator::execute_statement(const Statement& statement)
