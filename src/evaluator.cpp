@@ -110,6 +110,26 @@ namespace scriba {
 			return eval_mul(left, right, exp.token);
 		case TokenType::SLASH:
 			return eval_div(left, right, exp.token);
+		case TokenType::EQUAL:
+			return Value(left == right);
+		case TokenType::NOT_EQUAL:
+			return Value(!(left == right));
+		case TokenType::GREATER_THAN:
+			if (left.is_number() && right.is_number())
+				return Value(left.as_number() > right.as_number());
+			throw RuntimeError("Invalid operands for >", exp.token);
+		case TokenType::GREATER_EQUAL:
+			if (left.is_number() && right.is_number())
+				return Value(left.as_number() >= right.as_number());
+			throw RuntimeError("Invalid operands for >=", exp.token);
+		case TokenType::LESS_THAN:
+			if (left.is_number() && right.is_number())
+				return Value(left.as_number() < right.as_number());
+			throw RuntimeError("Invalid operands for <", exp.token);
+		case TokenType::LESS_EQUAL:
+			if (left.is_number() && right.is_number())
+				return Value(left.as_number() <= right.as_number());
+			throw RuntimeError("Invalid operands for <=", exp.token);
 		default:
 			throw RuntimeError("Unknown binary operator", exp.token);
 		}
