@@ -163,8 +163,11 @@ namespace scriba {
 		if (std::holds_alternative<double>(literal))
 			return Value(std::get<double>(literal));
 
-		if (std::holds_alternative<std::string>(literal))
-			return Value(std::get<std::string>(literal));
+		if (std::holds_alternative<std::string>(literal)) {
+			const std::string& raw = std::get<std::string>(literal);
+			std::string unquoted = raw.substr(1, raw.size() - 2);
+			return Value(unquoted);
+		}
 
 		if (std::holds_alternative<bool>(literal))
 			return Value(std::get<bool>(literal));
