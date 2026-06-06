@@ -57,7 +57,7 @@ void expect_value_failure(const std::string& test_name,
     }
 }
 
-void test_expressions_success() {
+void test_expression_success() {
     std::cout << "Running expression success tests..." << std::endl;
 
     expect_value("literal number 5", "5", Value(5.0));
@@ -105,33 +105,78 @@ void test_expressions_success() {
     expect_value("string comparison != (false)", "\"hello world\" != \"hello world\"", Value(false));
     expect_value("object comparison == (true)", "test == test", Value(true));
     expect_value("object comparison != (false)", "test != test", Value(false));
+    expect_value("object comparison == (false)", "test == other_test", Value(false));
+    expect_value("object comparison != (true)", "test != other_test", Value(true));
 
     std::cout << "Expression (success) tests completed." << std::endl;
+}
+
+void test_expression_failure() {
+    std::cout << "Running expression failure tests..." << std::endl;
+
+    expect_value_failure("invalid arithmetic string + number", "\"hello\" + 5");
+    expect_value_failure("invalid arithmetic string - number", "\"hello\" - 5");
+    expect_value_failure("invalid arithmetic string * number", "\"hello\" * 5");
+    expect_value_failure("invalid arithmetic string / number", "\"hello\" / 5");
+    expect_value_failure("invalid arithmetic string + bool", "\"hello\" + true");
+    expect_value_failure("invalid arithmetic string - bool", "\"hello\" - true");
+    expect_value_failure("invalid arithmetic string * bool", "\"hello\" * true");
+    expect_value_failure("invalid arithmetic string / bool", "\"hello\" / true");
+    expect_value_failure("invalid arithmetic string + object", "\"hello\" + test");
+    expect_value_failure("invalid arithmetic string - object", "\"hello\" - test");
+    expect_value_failure("invalid arithmetic string * object", "\"hello\" * test");
+    expect_value_failure("invalid arithmetic string / object", "\"hello\" / test");
+    expect_value_failure("invalid arithmetic string + range", "\"hello\" + 1..4");
+    expect_value_failure("invalid arithmetic string - range", "\"hello\" - 1..4");
+    expect_value_failure("invalid arithmetic string * range", "\"hello\" * 1..4");
+    expect_value_failure("invalid arithmetic string / range", "\"hello\" / 1..4");
+    expect_value_failure("invalid arithmetic number + bool", "5 + true");
+    expect_value_failure("invalid arithmetic number - bool", "5 - true");
+    expect_value_failure("invalid arithmetic number * bool", "5 * true");
+    expect_value_failure("invalid arithmetic number / bool", "5 / true");
+    expect_value_failure("invalid arithmetic number + object", "5 + test");
+    expect_value_failure("invalid arithmetic number - object", "5 - test");
+    expect_value_failure("invalid arithmetic number * object", "5 * test");
+    expect_value_failure("invalid arithmetic number / object", "5 / test");
+    expect_value_failure("invalid arithmetic bool + object", "true + test");
+    expect_value_failure("invalid arithmetic bool - object", "true - test");
+    expect_value_failure("invalid arithmetic bool * object", "true * test");
+    expect_value_failure("invalid arithmetic bool / object", "true / test");
+    expect_value_failure("invalid arithmetic bool + range", "true + 1..4");
+    expect_value_failure("invalid arithmetic bool - range", "true - 1..4");
+    expect_value_failure("invalid arithmetic bool * range", "true * 1..4");
+    expect_value_failure("invalid arithmetic bool / range", "true / 1..4");
+    expect_value_failure("invalid arithmetic object + range", "test + 1..4");
+    expect_value_failure("invalid arithmetic object - range", "test - 1..4");
+    expect_value_failure("invalid arithmetic object * range", "test * 1..4");
+    expect_value_failure("invalid arithmetic object / range", "test / 1..4");
+
+    std::cout << "Expression (failure) tests completed." << std::endl;
 }
 
 void test_expression_cross_type_comparison_success() {
     std::cout << "Running expression cross-type comparison success tests..." << std::endl;
 
     expect_value("invalid comparison string == number", "\"hello\" == 5", Value(false));
-    expect_value("invalid comparison string != number", "\"hello\" != 5", Value(false));
+    expect_value("invalid comparison string != number", "\"hello\" != 5", Value(true));
     expect_value("invalid comparison string == bool", "\"hello\" == true", Value(false));
-    expect_value("invalid comparison string != bool", "\"hello\" != true", Value(false));
+    expect_value("invalid comparison string != bool", "\"hello\" != true", Value(true));
     expect_value("invalid comparison string == range", "\"hello\" == 1..4", Value(false));
-    expect_value("invalid comparison string != range", "\"hello\" != 1..4", Value(false));
+    expect_value("invalid comparison string != range", "\"hello\" != 1..4", Value(true));
     expect_value("invalid comparison string == object", "\"hello\" == test", Value(false));
-    expect_value("invalid comparison string != object", "\"hello\" != test", Value(false));
+    expect_value("invalid comparison string != object", "\"hello\" != test", Value(true));
     expect_value("invalid comparison number == bool", "5 == false", Value(false));
-    expect_value("invalid comparison number != bool", "5 != false", Value(false));
+    expect_value("invalid comparison number != bool", "5 != false", Value(true));
     expect_value("invalid comparison number == object", "5 == test", Value(false));
-    expect_value("invalid comparison number != object", "5 != test", Value(false));
+    expect_value("invalid comparison number != object", "5 != test", Value(true));
     expect_value("invalid comparison number == range", "5 == 1..4", Value(false));
-    expect_value("invalid comparison number != range", "5 != 1..4", Value(false));
+    expect_value("invalid comparison number != range", "5 != 1..4", Value(true));
 
     std::cout << "Expression cross-type comparison (success) tests completed." << std::endl;
 }
 
-void test_expressions_failure() {
-    std::cout << "Running expression failure tests..." << std::endl;
+void test_expression_cross_type_comparison_failure() {
+    std::cout << "Running expression cross-type comparison failure tests..." << std::endl;
 
     expect_value_failure("invalid comparison string < number", "\"hello\" < 5");
     expect_value_failure("invalid comparison string <= number", "\"hello\" <= 5");
@@ -162,14 +207,25 @@ void test_expressions_failure() {
     expect_value_failure("invalid comparison number <= range", "5 <= 1..4");
     expect_value_failure("invalid comparison number >= range", "5 >= 1..4");
 
-    std::cout << "Expressions (failure) tests completed." << std::endl;
+    std::cout << "Expressions cross-type comparison (failure) tests completed." << std::endl;
+}
+
+void test_string_manipulation_success() {
+    std::cout << "Running expression string manipulation (success) tests..." << std::endl;
+
+    expect_value("string concat", "\"hello \" + \"world\"", Value("hello world"));
+
+    std::cout << "Expressions string manipulations (success) tests completed." << std::endl;
 }
 
 void run_evaluator_tests() {
     std::cout << "Running evaluator tests..." << std::endl;
 
-    test_expressions_success();
-    test_expressions_failure();
+    test_expression_success();
+    test_expression_failure();
+    test_expression_cross_type_comparison_success();
+    test_expression_cross_type_comparison_failure();
+    test_string_manipulation_success();
 
     ev_tests_failed = failed_tests_ev.size();
 

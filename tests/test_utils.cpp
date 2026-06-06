@@ -44,10 +44,10 @@ namespace testutils {
         return info;
     }
 
-	ObjectRef make_test_object()
+	ObjectRef make_test_object(int x, int y)
 	{
 		ObjectRef ref;
-		ref.instance = new TestObject();
+		ref.instance = new TestObject(x, y);
 		ref.type = &make_test_object_type();
 
 		return ref;
@@ -58,6 +58,8 @@ namespace testutils {
 		Environment env;
 		ObjectRef test_ref = make_test_object();
 		env.set("test", Value(test_ref));
+		ObjectRef other_ref = make_test_object(1, 2);
+		env.set("other_test", Value(other_ref));
 
         return env;
 	}

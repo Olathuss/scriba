@@ -16,6 +16,9 @@ namespace testutils {
         int x = 10;
         int y = 20;
 
+        TestObject() = default;
+        TestObject(int in_x, int in_y) : x(in_x), y(in_y) {};
+
         int add(int a, int b) { return a + b; }
     };
 
@@ -53,7 +56,7 @@ namespace testutils {
 
     ObjectTypeInfo& make_test_object_type();
 
-    ObjectRef make_test_object();
+    ObjectRef make_test_object(int x = 10, int y = 20);
 
     Environment make_env_with_test_object();
 
