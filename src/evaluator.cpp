@@ -336,25 +336,20 @@ namespace scriba {
 	const std::pair<std::string, ObjectRef> Evaluator::get_object_ref(const MemberExpression& exp)
 	{
 		std::string path = exp.token.lexeme;
-		auto* next = dynamic_cast<MemberExpression*>(exp.object.get());
-		auto* last = next;
-		while (next) {
-			last = next;
-			path = next->token.lexeme + "." + path;
-			next = dynamic_cast<MemberExpression*>(next->object.get());
+		const Expression* current = exp.object.get();
+
+		while (auto* member = dynamic_cast<const MemberExpression*>(current)) {
+			path = member->token.lexeme + "." + path;
+			current = member->object.get();
 		}
 
-		if (!last || !last->object)
-			throw RuntimeError("Invalid member chain.", exp.token);
+		if (!current || current->kind != ExpressionKind::Identifier)
+			throw RuntimeError("Missing or invalid identifier", exp.token);
 
-		auto* ident = dynamic_cast<IdentifierExpression*>(last->object.get());
-		if (!ident)
-			throw RuntimeError("Invalid member chain", exp.token);
-
-		Value identifier = evaluate_expression(*ident);
+		Value identifier = evaluate_expression(*current);
 
 		if (!identifier.is_object()) {
-			throw RuntimeError("Member is not valid object.", ident->token);
+			throw RuntimeError("Member is not valid object.", current->token);
 		}
 
 		return { path, identifier.as_object() };
