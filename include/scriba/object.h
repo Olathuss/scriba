@@ -43,5 +43,9 @@ namespace scriba {
     struct ObjectRef {
         void* instance = nullptr;
         const ObjectTypeInfo* type = nullptr;
+
+        bool operator==(const ObjectRef& o) const {
+            return instance == o.instance;
+        }
     };
 } // namespace scriba
