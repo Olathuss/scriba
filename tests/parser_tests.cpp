@@ -1926,7 +1926,7 @@ void run_parser_tests() {
     if (failed_tests_parser.size() > 0) {
         std::cout << "The following tests failed: " << std::endl;
         for (auto& test : failed_tests_parser) {
-            std::cout << test << endl;
+            std::cout << test << std::endl;
         }
         std::cout << "Parser tests did not pass." << std::endl;
     } else {
