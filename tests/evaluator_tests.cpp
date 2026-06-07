@@ -107,6 +107,14 @@ void test_expression_success() {
     expect_value("object comparison != (false)", "test != test", Value(false));
     expect_value("object comparison == (false)", "test == other_test", Value(false));
     expect_value("object comparison != (true)", "test != other_test", Value(true));
+    expect_value("range comparison == (true)", "1..4 == 1..4", Value(true));
+    expect_value("range comparison == (true)", "1..4 == 2..5", Value(false));
+    expect_value("range comparison != (true)", "1..4 != 2..5", Value(true));
+    expect_value("range comparison != (true)", "1..4 != 1..4", Value(false));
+    expect_value("left assoc subtraction", "10 - 3 - 2", Value(5.0));
+    expect_value("left assoc addition", "1 + 2 + 3", Value(6.0));
+    expect_value("left assoc division", "8 / 2 / 2", Value(2.0));
+
 
     std::cout << "Expression (success) tests completed." << std::endl;
 }
@@ -257,6 +265,20 @@ void test_member_access_failure() {
     expect_value_failure("string method", "\"test\".add(1)");
     expect_value_failure("bool method", "true.add(1)");
     expect_value_failure("range method", "1..5.add(1)");
+    expect_value_failure("missing arguments", "test.add(1)");
+    expect_value_failure("too many arguments", "test.add(1, 2, 3)");
+
+    std::cout << "Expressions member access (failure) tests completed." << std::endl;
+}
+
+void test_syntax_errors() {
+    std::cout << "Running member access (failure) tests..." << std::endl;
+
+    expect_value_failure("missing operand", "1 + ");
+    expect_value_failure("missing operand group", "(1 + )");
+    expect_value_failure("incomplete range", "1..");
+    expect_value_failure("dangling dot", "test.");
+    expect_value_failure("invalid member access", "test.(x)");
 
     std::cout << "Expressions member access (failure) tests completed." << std::endl;
 }
@@ -272,6 +294,7 @@ void run_evaluator_tests() {
     test_ev_unary_success();
     test_invalid_unary_failure();
     test_member_access_failure();
+    test_syntax_errors();
 
     ev_tests_failed = failed_tests_ev.size();
 

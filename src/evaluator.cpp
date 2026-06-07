@@ -228,6 +228,13 @@ namespace scriba {
 			arguments.push_back(value);
 		}
 
+		if (arguments.size() != method.arity) {
+			throw RuntimeError(
+				"Expected " + std::to_string(method.arity) +
+				" arguments, got " + std::to_string(arguments.size()) +
+				" instead", exp.token);
+		}
+
 		return method.invoke(object_ref.instance, arguments);
 	}
 

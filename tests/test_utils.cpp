@@ -34,6 +34,7 @@ namespace testutils {
                 TestObject* obj = reinterpret_cast<TestObject*>(instance);
                 return Value((double)obj->add(values[0].as_number(), values[1].as_number()));
                 };
+            method.arity = 2;
 
             info.name = "test";
             info.properties.emplace("x", propx);
