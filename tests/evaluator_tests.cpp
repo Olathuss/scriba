@@ -114,7 +114,8 @@ void test_expression_success() {
     expect_value("left assoc subtraction", "10 - 3 - 2", Value(5.0));
     expect_value("left assoc addition", "1 + 2 + 3", Value(6.0));
     expect_value("left assoc division", "8 / 2 / 2", Value(2.0));
-
+    expect_value("deep nesting", "((((1+2)*3)-4)/5)", Value((double)((1 + 2) * 3 - 4) / 5));
+    expect_value("range expr endpoints", "(1+1)..(2+2)", Value(Range(2, 4)));
 
     std::cout << "Expression (success) tests completed." << std::endl;
 }
@@ -222,6 +223,9 @@ void test_string_manipulation_success() {
     std::cout << "Running expression string manipulation (success) tests..." << std::endl;
 
     expect_value("string concat", "\"hello \" + \"world\"", Value("hello world"));
+    expect_value("empty concat left", "\"\" + \"world\"", Value("world"));
+    expect_value("empty concat right", "\"hello\" + \"\"", Value("hello"));
+    expect_value("empty concat both", "\"\" + \"\"", Value(""));
 
     std::cout << "Expressions string manipulations (success) tests completed." << std::endl;
 }
