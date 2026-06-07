@@ -1,3 +1,5 @@
+#pragma once
+
 #include <typeindex>
 #include "scriba/object.h"
 
