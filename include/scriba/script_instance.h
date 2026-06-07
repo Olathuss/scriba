@@ -14,13 +14,15 @@ namespace scriba {
     class Parser;
     class Scanner;
     class TypeRegistry;
+    class Environment;
 
     class ScriptInstance {
 
     public:
         using OutputCallback = std::function<void(const std::string&)>;
 
-        ScriptInstance();
+        ScriptInstance() = default;
+        ScriptInstance(Environment in_env, TypeRegistry in_reg);
         ~ScriptInstance();
 
         void set_output_callback(OutputCallback cd);
@@ -30,6 +32,9 @@ namespace scriba {
 
     private:
         OutputCallback output;
+
+        TypeRegistry registry;
+        Environment environment;
 
         std::vector<std::string> event_order;
         std::unordered_map<std::string, EventBlock> events;

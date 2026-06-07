@@ -3,11 +3,16 @@
 #include "scriba/parser.h"
 #include "scriba/scanner.h"
 #include "scriba/environment.h"
+#include "scriba/evaluator.h"
 
 #include <exception>
 
 namespace scriba {
-	ScriptInstance::ScriptInstance() = default;
+	ScriptInstance::ScriptInstance(Environment in_env, TypeRegistry in_reg)
+	{
+		environment = in_env;
+		registry = in_reg;
+	}
 
 	ScriptInstance::~ScriptInstance() = default;
 
@@ -52,15 +57,25 @@ namespace scriba {
 			return false;
 		}
 
-		Environment env;
 		EventBlock& event = it->second;
 
-		for (int i = 0; i < event.parameters.size(); ++i) {
-			if (i >= args.size()) {
-				env.set(event.parameters[i].lexeme, Value(std::monostate()));
-				continue;
-			}
-			env.set(event.parameters[i].lexeme, args[i]);
+		Environment local = environment.make_child();
+
+		for (size_t i = 0; i < event.parameters.size(); ++i) {
+			if (i < args.size())
+				local.set(event.parameters[i].lexeme, args[i]);
+			else
+				local.set(event.parameters[i].lexeme, Value::null());
+		}
+
+		Evaluator ev = Evaluator(registry, local);
+		try {
+			ev.execute_block(event.statements);
+		}
+		catch (const std::exception& e) {
+			error = e.what();
+
+			return false;
 		}
 
 		return true;
