@@ -9,19 +9,20 @@
 
 namespace scriba {
 	class Environment {
-		std::unordered_map<std::string, Value> table;
-
 	public:
+		Environment(Environment* in_parent = nullptr);
+
 		Value get(const std::string& var_name);
 
 		void set(const std::string& var_name, Value var_value);
 
-		bool exists(const std::string& var_name) {
-			auto it = table.find(var_name);
-			if (it != table.end()) {
-				return true;
-			}
-			return false;
-		}
+		bool exists(const std::string& var_name);
+
+		Environment make_child();
+
+	private:
+		std::unordered_map<std::string, Value> table;
+		Environment* parent;
+
 	};
 } // namespace scriba
