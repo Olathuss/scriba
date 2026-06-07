@@ -218,6 +218,49 @@ void test_string_manipulation_success() {
     std::cout << "Expressions string manipulations (success) tests completed." << std::endl;
 }
 
+void test_ev_unary_success() {
+    std::cout << "Running unary (success) tests..." << std::endl;
+
+    expect_value("unary bool (true)", "!false", Value(true));
+    expect_value("unary bool (false)", "!true", Value(false));
+    expect_value("unary number", "-1", Value(-1.0));
+    expect_value("unary unary number", "--1", Value(1.0));
+    expect_value("unary object property", "-test.x", Value(-10.0));
+    expect_value("unary unary object property", "--test.y", Value(20.0));
+    expect_value("unary object method", "-test.add(10, 10)", Value(-20.0));
+
+    std::cout << "Expressions unary (success) tests completed." << std::endl;
+}
+
+void test_invalid_unary_failure() {
+    std::cout << "Running invalid unary (failure) tests..." << std::endl;
+
+    expect_value_failure("unary string", "-\"hello\"");
+    expect_value_failure("unary number", "!5");
+    expect_value_failure("unary range", "!1..4");
+    expect_value_failure("unary object property", "!test.x");
+    expect_value_failure("unary object method", "!test.add(1,1)");
+
+    std::cout << "Expressions invalid unary (failure) tests completed." << std::endl;
+}
+
+void test_member_access_failure() {
+    std::cout << "Running member access (failure) tests..." << std::endl;
+
+    expect_value_failure("number member", "5.x");
+    expect_value_failure("string member", "\"test\".x");
+    expect_value_failure("bool member", "true.x");
+    expect_value_failure("grouping member", "(1 + 2).x");
+    expect_value_failure("invalid member", "test.z");
+    expect_value_failure("invalid member member", "test.test.x");
+    expect_value_failure("number method", "5.add(1)");
+    expect_value_failure("string method", "\"test\".add(1)");
+    expect_value_failure("bool method", "true.add(1)");
+    expect_value_failure("range method", "1..5.add(1)");
+
+    std::cout << "Expressions member access (failure) tests completed." << std::endl;
+}
+
 void run_evaluator_tests() {
     std::cout << "Running evaluator tests..." << std::endl;
 
@@ -226,6 +269,9 @@ void run_evaluator_tests() {
     test_expression_cross_type_comparison_success();
     test_expression_cross_type_comparison_failure();
     test_string_manipulation_success();
+    test_ev_unary_success();
+    test_invalid_unary_failure();
+    test_member_access_failure();
 
     ev_tests_failed = failed_tests_ev.size();
 
