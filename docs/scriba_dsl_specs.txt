@@ -1,5 +1,9 @@
 Scibra DSL Specification - v0.1
 
+Note: This specification was written prior to implementation as a design guideline. 
+It reflects the intended behavior of Scriba v0.1, but the actual implementation 
+may differ as the language evolves. This document will be updated over time.
+
 --------------------
 Table of Contents
 --------------------
