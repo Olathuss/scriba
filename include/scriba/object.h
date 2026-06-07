@@ -17,6 +17,7 @@ namespace scriba {
 
     struct MethodInfo {
         std::function<Value(void*, const std::vector<Value>&)> invoke;
+        size_t arity = 0;
     };
 
     struct ObjectTypeInfo {
