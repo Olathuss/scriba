@@ -7,15 +7,15 @@
 
 using namespace scriba;
 
-int ev_tests_total = 0;
-int ev_tests_failed = 0;
-std::vector<std::string> failed_tests_ev;
+int exp_tests_total = 0;
+int exp_tests_failed = 0;
+std::vector<std::string> failed_tests_exp;
 
 void expect_value(const std::string& test_name,
     const std::string& source,
     const Value& expected)
 {
-    ev_tests_total++;
+    exp_tests_total++;
 
     Environment env = testutils::make_env_with_test_object();
     TypeRegistry reg;
@@ -26,19 +26,19 @@ void expect_value(const std::string& test_name,
         auto result = eval.evaluate_expression(*expr);
 
         if (result != expected) {
-            failed_tests_ev.push_back(test_name);
+            failed_tests_exp.push_back(test_name);
         }
     }
     catch (const std::exception& e) {
         std::cout << test_name + " (exception: " + e.what() + ")" << std::endl;
-        failed_tests_ev.push_back(test_name);
+        failed_tests_exp.push_back(test_name);
     }
 }
 
 void expect_value_failure(const std::string& test_name,
     const std::string& source)
 {
-    ev_tests_total++;
+    exp_tests_total++;
 
     Environment env = testutils::make_env_with_test_object();
     TypeRegistry reg;
@@ -50,7 +50,7 @@ void expect_value_failure(const std::string& test_name,
 
         std::cout << "Expected evaluation failure for \"" + test_name + "\", but evaluation succeeded." << std::endl;
         std::cout << "Source: " + source << std::endl;
-        failed_tests_ev.push_back(test_name);
+        failed_tests_exp.push_back(test_name);
     }
     catch (const std::exception& e) {
         std::cout << "Test \"" << test_name << "\" correctly failed, passed.\n";
@@ -287,8 +287,8 @@ void test_syntax_errors() {
     std::cout << "Expressions member access (failure) tests completed." << std::endl;
 }
 
-void run_evaluator_tests() {
-    std::cout << "Running evaluator tests..." << std::endl;
+void run_expression_tests() {
+    std::cout << "Running expression tests..." << std::endl;
 
     test_expression_success();
     test_expression_failure();
@@ -300,25 +300,25 @@ void run_evaluator_tests() {
     test_member_access_failure();
     test_syntax_errors();
 
-    ev_tests_failed = failed_tests_ev.size();
+    exp_tests_failed = failed_tests_exp.size();
 
-    if (failed_tests_ev.size() > 0) {
+    if (failed_tests_exp.size() > 0) {
         std::cout << "The following tests failed: " << std::endl;
-        for (auto& test : failed_tests_ev) {
+        for (auto& test : failed_tests_exp) {
             std::cout << test << std::endl;
         }
-        std::cout << "Evaluator tests did not pass." << std::endl;
+        std::cout << "Expression tests did not pass." << std::endl;
     } else {
-        std::cout << "Evaluator tests passed." << std::endl;
+        std::cout << "Expression tests passed." << std::endl;
     }
 
-    std::cout << "Evaluator test completed." << std::endl;
+    std::cout << "Expression test completed." << std::endl;
 }
 
-int get_evaluator_tests_total() {
-    return ev_tests_total;
+int get_expression_tests_total() {
+    return exp_tests_total;
 }
 
-int get_evaluator_tests_failed() {
-    return failed_tests_ev.size();
+int get_expression_tests_failed() {
+    return failed_tests_exp.size();
 }

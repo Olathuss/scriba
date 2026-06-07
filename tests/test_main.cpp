@@ -6,9 +6,9 @@ int get_scanner_tests_failed();
 void run_parser_tests();
 int get_parser_tests_total();
 int get_parser_tests_failed();
-void run_evaluator_tests();
-int get_evaluator_tests_total();
-int get_evaluator_tests_failed();
+void run_expression_tests();
+int get_expression_tests_total();
+int get_expression_tests_failed();
 
 using namespace std;
 
@@ -17,8 +17,8 @@ void print_test_report() {
     int scanner_tests_failed = get_scanner_tests_failed();
     int parser_tests_total = get_parser_tests_total();
     int parser_tests_failed = get_parser_tests_failed();
-    int evaluator_tests_total = get_evaluator_tests_total();
-    int evaluator_tests_failed = get_evaluator_tests_failed();
+    int expression_tests_total = get_expression_tests_total();
+    int expression_tests_failed = get_expression_tests_failed();
 
     std::cout << "\n====================\n";
     std::cout << "      TEST REPORT\n";
@@ -42,13 +42,13 @@ void print_test_report() {
         std::cout << "  (" << parser_tests_failed << " failed)";
     std::cout << "\n";
 
-    std::cout << "Evaluator Tests: "
-        << (evaluator_tests_total - evaluator_tests_failed)
-        << " / " << evaluator_tests_total
+    std::cout << "Expression Tests: "
+        << (expression_tests_total - expression_tests_failed)
+        << " / " << expression_tests_total
         << " passed";
 
-    if (evaluator_tests_failed > 0)
-        std::cout << "  (" << evaluator_tests_failed << " failed)";
+    if (expression_tests_failed > 0)
+        std::cout << "  (" << expression_tests_failed << " failed)";
     std::cout << "\n";
 
     std::cout << "====================\n";
@@ -57,7 +57,7 @@ void print_test_report() {
 int main(int argc, char** argv) {
 	run_scanner_tests();
 	run_parser_tests();
-    run_evaluator_tests();
+    run_expression_tests();
 
 	cout << "Testing completed" << endl;
 

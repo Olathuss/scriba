@@ -4,7 +4,7 @@ add_executable(scriba_tests
 	test_main.cpp
 	scanner_tests.cpp
 	parser_tests.cpp
-	evaluator_tests.cpp
+	expression_tests.cpp
 	ast_printer.h
 	ast_printer.cpp
 	test_utils.h
