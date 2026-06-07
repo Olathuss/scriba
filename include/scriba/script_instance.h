@@ -7,14 +7,14 @@
 
 #include "scriba/value.h"
 #include "scriba/ast/event_block.h"
+#include "scriba/type_registry.h"
+#include "scriba/environment.h"
 
 namespace scriba {
 
     class StorageManager;
     class Parser;
     class Scanner;
-    class TypeRegistry;
-    class Environment;
 
     class ScriptInstance {
 
