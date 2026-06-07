@@ -71,6 +71,10 @@ namespace scriba {
         Value(const Range& r) : data(r) {}
         Value(const ObjectRef& o) : data(o) {}
 
+        static Value null() {
+            return Value(std::monostate{});
+        }
+
         bool is_number() const {
             return std::holds_alternative<double>(data);
         }
