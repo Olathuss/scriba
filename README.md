@@ -51,6 +51,6 @@ event onStart():
     print("Hello from Scriba!")
 
 event onDamage(amount):
-    if (amount > 10):
+    if amount > 10:
         print("That hurt!")
 ```
