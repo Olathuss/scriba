@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/scriba-logo.png" width="200" alt="Scriba Logo">
+</p>
+
 # Scriba
 
 A lightweight, event‑driven scripting DSL with a reflection‑based runtime and hierarchical property paths (e.g., `player.stats.health`).
